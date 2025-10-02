@@ -1,30 +1,49 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
-import Button from '../../components/ui/Button'
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import Button from "../../components/ui/Button";
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const submit = async (e) => {
-    e.preventDefault()
-    const res = await login({ email, password })
-    if (res.ok) navigate('/')
-    else setError(res.message)
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    // login() trả về { ok, message, user } thay vì throw error
+    const result = await login({ email, password });
+
+    console.log("Login result:", result); // Debug log
+
+    if (result.ok) {
+      // Đăng nhập thành công
+      navigate("/dashboard");
+    } else {
+      // Đăng nhập thất bại - hiển thị message từ backend
+      setError(result.message);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-primaryLight">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow">
         <h1 className="text-2xl font-bold text-primary mb-2">Đăng nhập</h1>
-        <p className="text-sm text-gray-500 mb-6">Đăng nhập để vào trang quản trị</p>
+        <p className="text-sm text-gray-500 mb-6">
+          Đăng nhập để vào trang quản trị
+        </p>
 
-        <form onSubmit={submit} className="space-y-4">
-          {error && <div className="text-sm text-red-600">{error}</div>}
+        {/* CHỈ 1 chỗ hiển thị error */}
+        {error && (
+          <div className="bg-red-100 text-red-600 px-3 py-2 rounded mb-4 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
@@ -56,11 +75,7 @@ export default function Login() {
             <Button type="submit">Đăng nhập</Button>
           </div>
         </form>
-
-        <div className="mt-6 text-xs text-gray-500">
-          Demo: admin@demo.com / password
-        </div>
       </div>
     </div>
-  )
+  );
 }
