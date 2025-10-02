@@ -57,12 +57,7 @@ export function AuthProvider({ children }) {
 
         success = true;
         message = "Đăng nhập thành công!";
-
-        // ***** QUAN TRỌNG: Xóa lệnh navigate ở đây *****
-        // navigate('/dashboard');
-        // Lệnh điều hướng phải được thực hiện trong component Login.jsx sau khi nhận được kết quả ok: true
       } else {
-        // Trường hợp API trả về thành công (200) nhưng cấu trúc dữ liệu thiếu (user/token)
         message =
           dataToProcess.message ||
           dataToProcess.msg ||
