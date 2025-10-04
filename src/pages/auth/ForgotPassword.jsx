@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/AuthContext";
 
 export default function ForgotPassword() {
   const { sendOtpForReset } = useAuth(); // gọi service gửi OTP
