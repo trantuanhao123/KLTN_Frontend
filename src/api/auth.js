@@ -1,18 +1,20 @@
 import axiosClient from "./axiosClient";
 
 const authApi = {
-  /**
-   * Gọi API đăng nhập cho Admin.
-   * Endpoint: POST /user/loginAdmin
-   * @param {object} credentials - { email, password }
-   * @returns {Promise<AxiosResponse>} Trả về response từ axios.
-   */
   loginAdmin: (credentials) => {
     const url = "/user/loginAdmin";
     return axiosClient.post(url, credentials);
   },
+  sendOtpForReset: (payload) => {
+    const url = "/auth/request-reset";
+    return axiosClient.post(url, payload);
+    //payload = {email}
+  },
 
-  // Có thể thêm các API khác như logout, forgotPassword... tại đây
+  resetPassword: (payload) => {
+    const url = "/auth/verify-otp";
+    return axiosClient.post(url, payload);
+  },
 };
 
 export default authApi;

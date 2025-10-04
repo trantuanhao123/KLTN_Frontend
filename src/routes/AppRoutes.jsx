@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 // Import tất cả các trang
 import Login from "../pages/auth/Login";
 import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import Dashboard from "../pages/dashboard/Dashboard";
 import VehicleList from "../pages/vehicles/VehicleList";
 import VehicleForm from "../pages/vehicles/VehicleForm";
@@ -29,7 +30,7 @@ export default function AppRoutes() {
       {/* -------------------- PUBLIC ROUTES -------------------- */}
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-
+      <Route path="/reset-password" element={<ResetPassword />} />
       {/* -------------------- PROTECTED ROUTES -------------------- */}
 
       {/* Route Trang Chủ (Tự động điều hướng đến Dashboard nếu đã đăng nhập) */}
@@ -40,7 +41,6 @@ export default function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            {/* Nếu có Layout, wrap <Dashboard /> trong <Layout> */}
             <Dashboard />
           </ProtectedRoute>
         }
