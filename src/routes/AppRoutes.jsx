@@ -9,6 +9,7 @@ import ResetPassword from "../pages/auth/ResetPassword";
 import Dashboard from "../pages/dashboard/Dashboard";
 import VehicleList from "../pages/vehicles/VehicleList";
 import VehicleForm from "../pages/vehicles/VehicleForm";
+import VehicleDetail from "../pages/vehicles/VehicleDetail";
 import BookingList from "../pages/bookings/BookingList";
 import CustomerList from "../pages/customers/CustomerList";
 import Reports from "../pages/reports/Reports";
@@ -60,6 +61,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <VehicleForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vehicles/:id"
+        element={
+          <ProtectedRoute>
+            <VehicleDetail />
           </ProtectedRoute>
         }
       />
