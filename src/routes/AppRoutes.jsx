@@ -9,6 +9,7 @@ import ResetPassword from "../pages/auth/ResetPassword";
 import Dashboard from "../pages/dashboard/Dashboard";
 import VehicleList from "../pages/vehicles/VehicleList";
 import VehicleForm from "../pages/vehicles/VehicleForm";
+import VehicleUpdateForm from "../pages/vehicles/VehicleUpdateForm";
 import VehicleDetail from "../pages/vehicles/VehicleDetail";
 import BookingList from "../pages/bookings/BookingList";
 import CustomerList from "../pages/customers/CustomerList";
@@ -72,7 +73,14 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/vehicles/edit/:id"
+        element={
+          <ProtectedRoute>
+            <VehicleUpdateForm />
+          </ProtectedRoute>
+        }
+      />
       {/* Booking Route */}
       <Route
         path="/bookings"

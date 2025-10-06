@@ -23,6 +23,14 @@ const carApi = {
     // DELETE /api/car/:id
     return axiosClient.delete(`/car/${id}`);
   },
+  updateCar: (id, formData) => {
+    // PUT /api/car/:id
+    return axiosClient.put(`/car/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };
 
 export default carApi;

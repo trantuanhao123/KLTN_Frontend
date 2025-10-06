@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// Giả định BACKEND_URL được thiết lập là 'http://localhost:8080' như trong env
-// Trong môi trường React thực tế, bạn sẽ dùng: process.env.BACKEND_URL
 const BASE_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
 const axiosClient = axios.create({

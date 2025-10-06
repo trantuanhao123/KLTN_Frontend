@@ -5,7 +5,7 @@ import Button from "../../components/ui/Button";
 import { useNavigate, useParams } from "react-router-dom";
 import useCars from "../../hooks/useCar";
 
-const BACKEND_URL = "http://localhost:8080";
+const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
 export default function VehicleDetail() {
   const navigate = useNavigate();
