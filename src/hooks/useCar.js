@@ -1,6 +1,6 @@
 // src/hooks/useCars.js
 import { useEffect, useState } from "react";
-import carApi from "../api/vehicles";
+import carApi from "../api/vehicle";
 
 export default function useCars() {
   const [cars, setCars] = useState([]);

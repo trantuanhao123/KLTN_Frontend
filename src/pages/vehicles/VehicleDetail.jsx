@@ -3,7 +3,7 @@ import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useNavigate, useParams } from "react-router-dom";
-import useCars from "../../hooks/useCars";
+import useCars from "../../hooks/useCar";
 
 const BACKEND_URL = "http://localhost:8080";
 

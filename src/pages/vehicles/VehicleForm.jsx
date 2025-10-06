@@ -2,15 +2,39 @@ import React, { useState, useEffect } from "react";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import axios from "axios";
-
-const BACKEND_URL = "http://localhost:8080";
+// Import Custom Hooks
+import useServices from "../../hooks/useService";
+import useBranches from "../../hooks/useBranch";
+import useCategory from "../../hooks/useCategory";
+import useCars from "../../hooks/useCar"; // ✅ Đã thêm import useCars
 
 export default function VehicleForm() {
-  const [services, setServices] = useState([]);
+  const { createCar } = useCars(); // ✅ Sử dụng hook để lấy hàm createCar
+
+  // Lấy dữ liệu Service
+  const {
+    services,
+    isLoading: isLoadingServices,
+    error: servicesError,
+  } = useServices();
+
+  // Lấy dữ liệu Branch (Chi nhánh)
+  const {
+    branches,
+    isLoading: isLoadingBranches,
+    error: branchesError,
+  } = useBranches();
+
+  // Lấy dữ liệu Category (Danh mục)
+  const {
+    categories,
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+  } = useCategory();
+
   const [formData, setFormData] = useState({
     licensePlate: "",
-    categoryId: "",
+    categoryId: "", // Trường này sẽ chứa CATEGORY_ID được chọn
     brand: "",
     model: "",
     color: "",
@@ -27,14 +51,6 @@ export default function VehicleForm() {
     carImages: [],
   });
 
-  // Lấy danh sách dịch vụ từ API
-  useEffect(() => {
-    axios
-      .get(`${BACKEND_URL}/service`)
-      .then((res) => setServices(res.data))
-      .catch((err) => console.error("Lỗi tải dịch vụ:", err));
-  }, []);
-
   // Xử lý thay đổi input
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,10 +59,18 @@ export default function VehicleForm() {
 
   // Xử lý chọn nhiều service
   const handleServiceChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(
-      (opt) => opt.value
-    );
-    setFormData((prev) => ({ ...prev, serviceIds: selectedOptions }));
+    const { value, checked } = e.target;
+    setFormData((prev) => {
+      let newServiceIds;
+      if (checked) {
+        // Thêm ID vào mảng nếu checkbox được chọn
+        newServiceIds = [...prev.serviceIds, value];
+      } else {
+        // Lọc bỏ ID khỏi mảng nếu checkbox bị bỏ chọn
+        newServiceIds = prev.serviceIds.filter((id) => id !== value);
+      }
+      return { ...prev, serviceIds: newServiceIds };
+    });
   };
 
   // Xử lý chọn nhiều file ảnh
@@ -64,17 +88,20 @@ export default function VehicleForm() {
         if (key === "carImages") {
           value.forEach((file) => data.append("carImages", file));
         } else if (key === "serviceIds") {
+          // Vẫn append serviceIds dưới dạng chuỗi ngăn cách bằng dấu phẩy
           data.append("serviceIds", value.join(","));
         } else {
           data.append(key, value);
         }
       });
 
-      const res = await axios.post(`${BACKEND_URL}/cars`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // ✅ Đã sửa: Gọi hàm createCar từ hook, hàm này sẽ sử dụng carApi.post("/car")
+      const res = await createCar(data);
 
-      alert("Thêm xe thành công! Mã xe: " + res.data.carId);
+      // Dòng này cần được kiểm tra lại field trả về từ API
+      alert("Thêm xe thành công! Mã xe: " + res.CAR_ID);
+
+      // Reset form data
       setFormData({
         licensePlate: "",
         categoryId: "",
@@ -94,10 +121,34 @@ export default function VehicleForm() {
         carImages: [],
       });
     } catch (err) {
+      // Bắt lỗi được throw từ createCar hook
       console.error(err);
-      alert("Lỗi khi gửi dữ liệu!");
+      alert(err.message || "Lỗi khi gửi dữ liệu!");
     }
   };
+
+  // Xử lý trạng thái tải và lỗi
+  if (isLoadingServices || isLoadingBranches || isLoadingCategories) {
+    return (
+      <Layout>
+        <Card title="Thêm / Chỉnh sửa Xe">
+          <p>Đang tải dữ liệu cần thiết...</p>
+        </Card>
+      </Layout>
+    );
+  }
+
+  if (servicesError || branchesError || categoriesError) {
+    return (
+      <Layout>
+        <Card title="Thêm / Chỉnh sửa Xe">
+          <p className="text-red-500">
+            Lỗi tải dữ liệu: {servicesError || branchesError || categoriesError}
+          </p>
+        </Card>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -114,15 +165,28 @@ export default function VehicleForm() {
                 required
               />
             </div>
+            {/* TRƯỜNG DANH MỤC XE ĐÃ THAY ĐỔI */}
             <div>
               <label className="block text-sm mb-1">Mã danh mục</label>
-              <input
+              <select // Thay thế input bằng select
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
                 required
-              />
+              >
+                <option value="" disabled>
+                  -- Chọn danh mục --
+                </option>
+                {categories.map((c) => (
+                  <option
+                    key={c.CATEGORY_ID}
+                    value={c.CATEGORY_ID} // Truyền CATEGORY_ID
+                  >
+                    {c.NAME} ({c.CODE}) {/* Hiển thị Tên và Mã CODE */}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -223,14 +287,25 @@ export default function VehicleForm() {
             </div>
           </div>
 
+          {/* TRƯỜNG CHI NHÁNH */}
           <div>
             <label className="block text-sm mb-1">Chi nhánh</label>
-            <input
+            <select
               name="branchId"
               value={formData.branchId}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
-            />
+              required
+            >
+              <option value="" disabled>
+                -- Chọn chi nhánh --
+              </option>
+              {branches.map((b) => (
+                <option key={b.BRANCH_ID} value={b.BRANCH_ID}>
+                  {b.NAME}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -266,21 +341,30 @@ export default function VehicleForm() {
 
           <div>
             <label className="block text-sm mb-1">Dịch vụ đi kèm</label>
-            <select
-              multiple
-              name="serviceIds"
-              value={formData.serviceIds}
-              onChange={handleServiceChange}
-              className="w-full border rounded px-3 py-2"
-            >
+            <div className="border rounded p-3 space-y-2">
+              {" "}
+              {/* Thêm div bọc để định dạng */}
               {services.map((s) => (
-                <option key={s.SERVICE_ID} value={s.SERVICE_ID}>
-                  {s.NAME}
-                </option>
+                <div key={s.SERVICE_ID} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`service-${s.SERVICE_ID}`}
+                    name="serviceIds"
+                    value={s.SERVICE_ID}
+                    checked={formData.serviceIds.includes(String(s.SERVICE_ID))} // Kiểm tra xem ID có trong mảng không
+                    onChange={handleServiceChange}
+                    className="mr-2 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                  />
+                  <label
+                    htmlFor={`service-${s.SERVICE_ID}`}
+                    className="text-sm cursor-pointer"
+                  >
+                    {s.NAME}
+                  </label>
+                </div>
               ))}
-            </select>
+            </div>
           </div>
-
           <div>
             <label className="block text-sm mb-1">Hình ảnh xe</label>
             <input
