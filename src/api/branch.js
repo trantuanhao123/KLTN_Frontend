@@ -11,10 +11,13 @@ const branchesApi = {
     return axiosClient.get(`/branch/${id}`);
   },
   createUpdateBranch: (branchData) => {
-    if (branchData.id) {
+    // Kiểm tra nếu có branchData.id hoặc branchData.BRANCH_ID => UPDATE
+    const branchId = branchData.id || branchData.BRANCH_ID;
+
+    if (branchId) {
       // UPDATE (PUT)
-      const { id, ...data } = branchData;
-      return axiosClient.put(`/branch/${id}`, data);
+      const { id, BRANCH_ID, ...data } = branchData; // loại bỏ key id/BRANCH_ID khỏi body
+      return axiosClient.put(`/branch/${branchId}`, data);
     } else {
       // CREATE (POST)
       return axiosClient.post("/branch", branchData);

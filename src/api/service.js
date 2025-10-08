@@ -12,13 +12,17 @@ const servicesApi = {
   },
 
   createUpdateService: (serviceData) => {
-    if (serviceData.id) {
+    const serviceId = serviceData.SERVICE_ID || serviceData.id;
+    const payload = {
+      name: serviceData.NAME || serviceData.name,
+      description: serviceData.DESCRIPTION || serviceData.description,
+    };
+    if (serviceId) {
       // UPDATE (PUT)
-      const { id, ...data } = serviceData;
-      return axiosClient.put(`/service/${id}`, data);
+      return axiosClient.put(`/service/${serviceId}`, payload);
     } else {
       // CREATE (POST)
-      return axiosClient.post("/service", serviceData);
+      return axiosClient.post("/service", payload);
     }
   },
 

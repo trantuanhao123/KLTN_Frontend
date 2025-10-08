@@ -58,17 +58,16 @@ const useServices = () => {
 
   // DELETE - NEW
   const removeService = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này không?")) return;
-
     setIsLoading(true);
     setError(null);
     try {
       await servicesApi.deleteService(id);
 
       // Cập nhật state bằng cách lọc bỏ dịch vụ vừa bị xóa
-      setServices((prevServices) => prevServices.filter((s) => s.id !== id));
-      // Nếu dịch vụ đang được chọn (chi tiết) bị xóa, đặt lại nó
-      if (selectedService && selectedService.id === id) {
+      setServices((prevServices) =>
+        prevServices.filter((s) => s.SERVICE_ID !== id)
+      );
+      if (selectedService && selectedService.SERVICE_ID === id) {
         setSelectedService(null);
       }
     } catch (err) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import branchesApi from "../api/branch";
 
 const useBranches = () => {
@@ -7,8 +7,7 @@ const useBranches = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // READ (Lấy danh sách)
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -20,15 +19,14 @@ const useBranches = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  // READ (Lấy chi tiết theo ID)
-  const loadBranch = async (id) => {
+  const loadBranch = useCallback(async (id) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await branchesApi.getBranchById(id);
-      setSelectedBranch(response.data); // Đặt dữ liệu vào state để dùng cho form chỉnh sửa
+      setSelectedBranch(response.data);
       return response.data;
     } catch (err) {
       console.error(`Lỗi tải chi nhánh ID ${id}:`, err);
@@ -37,61 +35,65 @@ const useBranches = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  // CREATE / UPDATE (Lưu)
-  const saveBranch = async (branchData) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const isUpdate = !!branchData.id;
-      const response = await branchesApi.createUpdateBranch(branchData);
-
-      // Cập nhật lại danh sách để hiển thị dữ liệu mới nhất
-      await fetchBranches();
-
-      if (isUpdate) {
-        setSelectedBranch(null); // Xóa dữ liệu chi tiết sau khi cập nhật
+  const saveBranch = useCallback(
+    async (branchData) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const branchId =
+          branchData.id || (selectedBranch && selectedBranch.BRANCH_ID);
+        const payload = {
+          ...branchData,
+          latitude: Number(branchData.latitude),
+          longitude: Number(branchData.longitude),
+        };
+        if (branchId) {
+          payload.id = branchId;
+        }
+        const response = await branchesApi.createUpdateBranch(payload);
+        await fetchBranches();
+        if (branchId) setSelectedBranch(null);
+        return response.data;
+      } catch (err) {
+        console.error("Lỗi lưu chi nhánh:", err);
+        setError("Lưu chi nhánh thất bại.");
+        throw new Error("Lưu chi nhánh thất bại.");
+      } finally {
+        setIsLoading(false);
       }
-      return response.data;
-    } catch (err) {
-      console.error("Lỗi lưu chi nhánh:", err);
-      setError("Lưu chi nhánh thất bại.");
-      throw new Error("Lưu chi nhánh thất bại.");
-    }
-  };
+    },
+    [selectedBranch, fetchBranches]
+  );
 
-  // DELETE (Xóa)
-  const removeBranch = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa chi nhánh này không?"))
-      return;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      await branchesApi.deleteBranch(id);
-
-      // Cập nhật state bằng cách lọc bỏ chi nhánh vừa bị xóa
-      setBranches((prevBranches) => prevBranches.filter((b) => b.id !== id));
-      if (selectedBranch && selectedBranch.id === id) {
-        setSelectedBranch(null);
+  const removeBranch = useCallback(
+    async (id) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await branchesApi.deleteBranch(id);
+        await fetchBranches();
+        setBranches((prevBranches) => prevBranches.filter((b) => b.id !== id));
+        if (selectedBranch && selectedBranch.id === id) {
+          setSelectedBranch(null);
+        }
+      } catch (err) {
+        console.error(`Lỗi xóa chi nhánh ID ${id}:`, err);
+        setError("Xóa chi nhánh thất bại.");
+        throw new Error("Xóa chi nhánh thất bại.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error(`Lỗi xóa chi nhánh ID ${id}:`, err);
-      setError("Xóa chi nhánh thất bại.");
-      throw new Error("Xóa chi nhánh thất bại.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [selectedBranch, fetchBranches]
+  );
 
-  // Hàm để component bên ngoài có thể xóa trạng thái chi nhánh đang được chỉnh sửa
-  const clearSelectedBranch = () => setSelectedBranch(null);
+  const clearSelectedBranch = useCallback(() => setSelectedBranch(null), []);
 
-  // Tải danh sách chi nhánh khi hook được khởi tạo
   useEffect(() => {
     fetchBranches();
-  }, []);
+  }, [fetchBranches]);
 
   return {
     branches,

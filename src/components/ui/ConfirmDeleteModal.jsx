@@ -19,8 +19,8 @@ export default function ConfirmDeleteModal({
       className="max-w-md" // Thu nhỏ kích thước modal một chút
     >
       <p className="text-gray-600 mb-6">
-        Bạn có chắc chắn muốn xóa xe {carName ? `"${carName}"` : "này"} không?
-        Hành động này không thể hoàn tác.
+        Bạn có chắc chắn muốn xóa {carName ? `"${carName}"` : "này"} không? Hành
+        động này không thể hoàn tác.
       </p>
 
       {/* Hiển thị lỗi nếu có */}

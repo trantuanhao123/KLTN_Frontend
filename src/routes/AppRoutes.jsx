@@ -2,43 +2,67 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/AuthContext";
 
-// Import tất cả các trang
+// ---------- AUTH ----------
 import Login from "../pages/auth/Login";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
+
+// ---------- DASHBOARD ----------
 import Dashboard from "../pages/dashboard/Dashboard";
+
+// ---------- VEHICLES ----------
 import VehicleList from "../pages/vehicles/VehicleList";
 import VehicleForm from "../pages/vehicles/VehicleForm";
 import VehicleUpdateForm from "../pages/vehicles/VehicleUpdateForm";
 import VehicleDetail from "../pages/vehicles/VehicleDetail";
+
+// ---------- BOOKINGS ----------
 import BookingList from "../pages/bookings/BookingList";
+
+// ---------- CUSTOMERS ----------
 import CustomerList from "../pages/customers/CustomerList";
+
+// ---------- REPORTS ----------
 import Reports from "../pages/reports/Reports";
 
-// Component bảo vệ route
+// ---------- CATEGORIES ----------
+import CategoryList from "../pages/categories/CategoryList";
+import CategoryForm from "../pages/categories/CategoryForm";
+import CategoryUpdateForm from "../pages/categories/CategoryUpdateForm";
+
+// ---------- SERVICES ----------
+import ServiceList from "../pages/services/ServiceList";
+import ServiceForm from "../pages/services/ServiceForm";
+import ServiceUpdateForm from "../pages/services/ServiceUpdateForm";
+
+// // ---------- INCIDENTS ----------
+// import IncidentList from "../pages/incidents/IncidentList";
+// import IncidentForm from "../pages/incidents/IncidentForm";
+// import IncidentUpdateForm from "../pages/incidents/IncidentUpdateForm";
+
+// // ---------- BRANCHES ----------
+import BranchList from "../pages/branches/BranchList";
+import BranchForm from "../pages/branches/BranchForm";
+import BranchUpdateForm from "../pages/branches/BranchUpdateForm";
+import BranchDetail from "../pages/branches/BranchDetail";
+// -------------------- Protected Route --------------------
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
-  // Nếu chưa đăng nhập, chuyển hướng về /login
   if (!user) return <Navigate to="/login" replace />;
-
-  // Nếu đã đăng nhập, trả về component con (ví dụ: <Dashboard />)
-  // Nếu có Layout, bọc children trong <Layout>
   return children;
 }
 
+// -------------------- App Routes --------------------
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* -------------------- PUBLIC ROUTES -------------------- */}
+      {/* -------- PUBLIC ROUTES -------- */}
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      {/* -------------------- PROTECTED ROUTES -------------------- */}
-
-      {/* Route Trang Chủ (Tự động điều hướng đến Dashboard nếu đã đăng nhập) */}
+      {/* -------- DEFAULT ROUTE -------- */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-      {/* Dashboard Route */}
+      {/* -------- DASHBOARD -------- */}
       <Route
         path="/dashboard"
         element={
@@ -47,8 +71,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* Vehicle Routes */}
+      {/* -------- VEHICLES -------- */}
       <Route
         path="/vehicles"
         element={
@@ -66,14 +89,6 @@ export default function AppRoutes() {
         }
       />
       <Route
-        path="/vehicles/:id"
-        element={
-          <ProtectedRoute>
-            <VehicleDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/vehicles/edit/:id"
         element={
           <ProtectedRoute>
@@ -81,7 +96,15 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      {/* Booking Route */}
+      <Route
+        path="/vehicles/:id"
+        element={
+          <ProtectedRoute>
+            <VehicleDetail />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- BOOKINGS -------- */}
       <Route
         path="/bookings"
         element={
@@ -90,8 +113,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* Customer Route */}
+      {/* -------- CUSTOMERS -------- */}
       <Route
         path="/customers"
         element={
@@ -100,8 +122,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* Reports Route */}
+      {/* -------- REPORTS -------- */}
       <Route
         path="/reports"
         element={
@@ -110,8 +131,115 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* Catch-all Route: Chuyển hướng mọi thứ không khớp về Dashboard (nếu đã đăng nhập) hoặc Login (nếu chưa) */}
+      {/* -------- CATEGORIES (CRUD) -------- */}
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <CategoryList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories/new"
+        element={
+          <ProtectedRoute>
+            <CategoryForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories/edit/:id"
+        element={
+          <ProtectedRoute>
+            <CategoryUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      -------- SERVICES (CRUD) --------
+      <Route
+        path="/services"
+        element={
+          <ProtectedRoute>
+            <ServiceList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/new"
+        element={
+          <ProtectedRoute>
+            <ServiceForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/edit/:id"
+        element={
+          <ProtectedRoute>
+            <ServiceUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- INCIDENTS (CRUD) -------- */}
+      {/* <Route
+        path="/incidents"
+        element={
+          <ProtectedRoute>
+            <IncidentList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/incidents/new"
+        element={
+          <ProtectedRoute>
+            <IncidentForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/incidents/edit/:id"
+        element={
+          <ProtectedRoute>
+            <IncidentUpdateForm />
+          </ProtectedRoute>
+        }
+      /> */}
+      {/* -------- BRANCHES (CRUD) -------- */}
+      <Route
+        path="/branches"
+        element={
+          <ProtectedRoute>
+            <BranchList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/branches/detail/:id"
+        element={
+          <ProtectedRoute>
+            <BranchDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/branches/new"
+        element={
+          <ProtectedRoute>
+            <BranchForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/branches/edit/:id"
+        element={
+          <ProtectedRoute>
+            <BranchUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- CATCH-ALL -------- */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

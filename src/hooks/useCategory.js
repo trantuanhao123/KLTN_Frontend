@@ -68,11 +68,7 @@ const useCategory = () => {
 
   // DELETE (Xóa)
   const removeCategory = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này không?"))
-      return;
-
     setIsLoading(true);
-    setError(null);
     try {
       await categoriesApi.deleteCategory(id);
 
@@ -80,18 +76,17 @@ const useCategory = () => {
       setCategories((prevCategories) =>
         prevCategories.filter((c) => c.CATEGORY_ID !== id)
       );
+
       if (selectedCategory && selectedCategory.CATEGORY_ID === id) {
         setSelectedCategory(null);
       }
     } catch (err) {
       console.error(`Lỗi xóa danh mục ID ${id}:`, err);
-      setError("Xóa danh mục thất bại.");
-      throw new Error("Xóa danh mục thất bại.");
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
-
   const clearSelectedCategory = () => setSelectedCategory(null);
 
   useEffect(() => {
