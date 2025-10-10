@@ -25,11 +25,7 @@ const carApi = {
   },
   updateCar: (id, formData) => {
     // PUT /api/car/:id
-    return axiosClient.put(`/car/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return axiosClient.put(`/car/${id}`, formData);
   },
 };
 

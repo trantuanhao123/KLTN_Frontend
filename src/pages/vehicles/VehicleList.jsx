@@ -130,9 +130,14 @@ export default function VehicleList() {
                         Chi tiết
                       </Button>
                     </Link>
+                    <Link to={`/vehicles/editImage/${row.CAR_ID}`}>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1">
+                        Sửa Hình
+                      </Button>
+                    </Link>
                     <Link to={`/vehicles/edit/${row.CAR_ID}`}>
                       <Button className="bg-amber-600 hover:bg-amber-700 text-white text-sm px-3 py-1">
-                        Sửa
+                        Sửa Thông Tin
                       </Button>
                     </Link>
                     {/* 🆕 GỌI HÀM MỞ MODAL, truyền đối tượng xe (row) */}

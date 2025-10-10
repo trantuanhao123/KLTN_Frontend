@@ -15,6 +15,7 @@ import VehicleList from "../pages/vehicles/VehicleList";
 import VehicleForm from "../pages/vehicles/VehicleForm";
 import VehicleUpdateForm from "../pages/vehicles/VehicleUpdateForm";
 import VehicleDetail from "../pages/vehicles/VehicleDetail";
+import VehicleUpdateImage from "../pages/vehicles/VehicleUpdateImage";
 
 // ---------- BOOKINGS ----------
 import BookingList from "../pages/bookings/BookingList";
@@ -34,7 +35,6 @@ import CategoryUpdateForm from "../pages/categories/CategoryUpdateForm";
 import ServiceList from "../pages/services/ServiceList";
 import ServiceForm from "../pages/services/ServiceForm";
 import ServiceUpdateForm from "../pages/services/ServiceUpdateForm";
-
 // // ---------- INCIDENTS ----------
 // import IncidentList from "../pages/incidents/IncidentList";
 // import IncidentForm from "../pages/incidents/IncidentForm";
@@ -101,6 +101,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <VehicleDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vehicles/editImage/:id"
+        element={
+          <ProtectedRoute>
+            <VehicleUpdateImage />
           </ProtectedRoute>
         }
       />
