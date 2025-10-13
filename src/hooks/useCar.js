@@ -68,7 +68,7 @@ export default function useCars() {
   async function deleteCar(id) {
     try {
       await carApi.deleteCar(id);
-      setCars((prev) => prev.filter((c) => c.CAR_ID !== id));
+      await fetchAllCars();
     } catch (err) {
       throw new Error(err.response?.data?.message || "Không thể xóa xe");
     }

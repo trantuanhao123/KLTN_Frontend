@@ -1,23 +1,33 @@
-import React, { useState } from "react"; // 👈 Thêm useState
+import React, { useState, useEffect } from "react";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Table from "../../components/ui/Table";
 import { Link } from "react-router-dom";
 import useCars from "../../hooks/useCar";
-import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal"; // 👈 Import modal mới
+import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
 const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
 export default function VehicleList() {
-  const { cars, loading, error, deleteCar } = useCars(); // 👈 Lấy hàm deleteCar
+  const { cars, loading, error, deleteCar } = useCars();
 
-  // 🆕 STATE QUẢN LÝ MODAL XÁC NHẬN
+  // ✅ Local state để lưu danh sách hiển thị (đã lọc)
+  const [filteredCars, setFilteredCars] = useState([]);
+  const [filterStatus, setFilterStatus] = useState("ALL");
+
+  // ✅ State modal xác nhận xóa
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // carToDelete sẽ chứa toàn bộ thông tin xe (hoặc ít nhất là ID và Tên/Model)
   const [carToDelete, setCarToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false); // State cho trạng thái xóa
+  const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+
+  // Cập nhật filteredCars mỗi khi cars hoặc filterStatus thay đổi
+  useEffect(() => {
+    if (!cars) return;
+    if (filterStatus === "ALL") setFilteredCars(cars);
+    else setFilteredCars(cars.filter((car) => car.STATUS === filterStatus));
+  }, [cars, filterStatus]);
 
   const headers = [
     "STT",
@@ -28,37 +38,38 @@ export default function VehicleList() {
     "Hành động",
   ];
 
-  // 🆕 HÀM MỞ MODAL
-  // Nhận vào đối tượng xe để có thể hiển thị thông tin chi tiết trong modal
+  // 🆕 Mở modal xác nhận xóa
   const handleDeleteClick = (car) => {
     setCarToDelete(car);
     setIsModalOpen(true);
     setDeleteError(null);
   };
 
-  // 🆕 HÀM XỬ LÝ XÓA KHI ĐÃ XÁC NHẬN
+  // 🆕 Xác nhận xóa (soft delete)
   const handleConfirmDelete = async () => {
     if (!carToDelete) return;
-
     setIsDeleting(true);
     setDeleteError(null);
 
     try {
-      await deleteCar(carToDelete.CAR_ID); // Gọi hàm xóa từ hook
+      await deleteCar(carToDelete.CAR_ID);
 
-      // Xóa thành công
+      // ✅ Thay vì xóa hẳn, ta cập nhật STATUS trong state:
+      setFilteredCars((prev) =>
+        prev.map((c) =>
+          c.CAR_ID === carToDelete.CAR_ID ? { ...c, STATUS: "DELETED" } : c
+        )
+      );
+
       setIsModalOpen(false);
       setCarToDelete(null);
-      // Bạn có thể thêm thông báo "Xóa thành công" ở đây (ví dụ: Toast)
     } catch (err) {
-      // Xóa thất bại
       setDeleteError(err.message || "Lỗi không xác định khi xóa xe.");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // 🆕 HÀM ĐÓNG MODAL
   const handleCancelDelete = () => {
     setIsModalOpen(false);
     setCarToDelete(null);
@@ -67,7 +78,6 @@ export default function VehicleList() {
 
   return (
     <Layout>
-      {/* ... (Phần tiêu đề và nút Thêm xe) ... */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold text-gray-800">Quản lý xe</h3>
         <Link to="/vehicles/new">
@@ -75,18 +85,36 @@ export default function VehicleList() {
         </Link>
       </div>
 
+      {/* 🆕 Bộ lọc trạng thái */}
+      <div className="flex items-center gap-3 mb-4">
+        <label className="font-medium text-gray-700">
+          Lọc theo trạng thái:
+        </label>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-1 text-sm"
+        >
+          <option value="ALL">Tất cả</option>
+          <option value="AVAILABLE">Sẵn sàng</option>
+          <option value="RESERVED">Đã đặt trước</option>
+          <option value="RENTED">Đang thuê</option>
+          <option value="MAINTENANCE">Đang bảo trì</option>
+          <option value="DELETED">Đã xóa</option>
+        </select>
+      </div>
+
       <Card>
-        {/* ... (Phần Loading/Error/No data) ... */}
         {loading ? (
           <p className="p-4 text-gray-500">Đang tải danh sách xe...</p>
         ) : error ? (
           <p className="p-4 text-red-500">Lỗi: {error}</p>
-        ) : cars.length === 0 ? (
-          <p className="p-4 text-gray-500">Chưa có xe nào trong hệ thống.</p>
+        ) : filteredCars.length === 0 ? (
+          <p className="p-4 text-gray-500">Không có xe phù hợp với bộ lọc.</p>
         ) : (
           <Table
             headers={headers}
-            data={cars}
+            data={filteredCars}
             renderRow={(row, idx) => (
               <>
                 <td className="px-4 py-2">{idx + 1}</td>
@@ -114,7 +142,13 @@ export default function VehicleList() {
                     className={`px-2 py-1 rounded text-xs ${
                       row.STATUS === "AVAILABLE"
                         ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
+                        : row.STATUS === "RENTED"
+                        ? "bg-blue-100 text-blue-700"
+                        : row.STATUS === "MAINTENANCE"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : row.STATUS === "RESERVED"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-gray-200 text-gray-700"
                     }`}
                   >
                     {row.STATUS}
@@ -140,13 +174,14 @@ export default function VehicleList() {
                         Sửa Thông Tin
                       </Button>
                     </Link>
-                    {/* 🆕 GỌI HÀM MỞ MODAL, truyền đối tượng xe (row) */}
-                    <Button
-                      className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
-                      onClick={() => handleDeleteClick(row)}
-                    >
-                      Xóa
-                    </Button>
+                    {row.STATUS !== "DELETED" && (
+                      <Button
+                        className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
+                        onClick={() => handleDeleteClick(row)}
+                      >
+                        Xóa
+                      </Button>
+                    )}
                   </div>
                 </td>
               </>
@@ -155,14 +190,12 @@ export default function VehicleList() {
         )}
       </Card>
 
-      {/* 🆕 COMPONENT MODAL XÁC NHẬN */}
       <ConfirmDeleteModal
         isOpen={isModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
         loading={isDeleting}
         error={deleteError}
-        // Truyền tên xe để hiển thị rõ trong modal
         carName={carToDelete ? `${carToDelete.BRAND} ${carToDelete.MODEL}` : ""}
       />
     </Layout>

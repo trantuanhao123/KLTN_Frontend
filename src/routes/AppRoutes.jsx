@@ -22,6 +22,7 @@ import BookingList from "../pages/bookings/BookingList";
 
 // ---------- CUSTOMERS ----------
 import CustomerList from "../pages/customers/CustomerList";
+import CustomerDetail from "../pages/customers/CustomerDetail";
 
 // ---------- REPORTS ----------
 import Reports from "../pages/reports/Reports";
@@ -127,6 +128,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <CustomerList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customers/:id"
+        element={
+          <ProtectedRoute>
+            <CustomerDetail />
           </ProtectedRoute>
         }
       />
