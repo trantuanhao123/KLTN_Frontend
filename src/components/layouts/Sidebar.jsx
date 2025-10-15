@@ -65,6 +65,9 @@ export default function Sidebar() {
             <NavLink to="/customers" className={navItemClass}>
               Khách hàng
             </NavLink>
+            <NavLink to="/banners" className={navItemClass}>
+              Banner
+            </NavLink>
           </div>
         )}
         {/* Các mục khác */}

@@ -46,6 +46,11 @@ import BranchList from "../pages/branches/BranchList";
 import BranchForm from "../pages/branches/BranchForm";
 import BranchUpdateForm from "../pages/branches/BranchUpdateForm";
 import BranchDetail from "../pages/branches/BranchDetail";
+
+// // ---------- Banner ----------
+import BannerList from "../pages/banner/BannerList";
+import BannerForm from "../pages/banner/BannerForm";
+import BannerUpdateForm from "../pages/banner/BannerUpdateForm";
 // -------------------- Protected Route --------------------
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -253,6 +258,31 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <BranchUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- Banner (CRUD) -------- */}
+      <Route
+        path="/banners"
+        element={
+          <ProtectedRoute>
+            <BannerList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/banners/new"
+        element={
+          <ProtectedRoute>
+            <BannerForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/banners/edit/:id"
+        element={
+          <ProtectedRoute>
+            <BannerUpdateForm />
           </ProtectedRoute>
         }
       />
