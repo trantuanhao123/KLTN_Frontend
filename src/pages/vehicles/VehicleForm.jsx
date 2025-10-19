@@ -6,10 +6,10 @@ import Button from "../../components/ui/Button";
 import useServices from "../../hooks/useService";
 import useBranches from "../../hooks/useBranch";
 import useCategory from "../../hooks/useCategory";
-import useCars from "../../hooks/useCar"; // ✅ Đã thêm import useCars
+import useCars from "../../hooks/useCar";
 
 export default function VehicleForm() {
-  const { createCar } = useCars(); // ✅ Sử dụng hook để lấy hàm createCar
+  const { createCar } = useCars();
 
   // Lấy dữ liệu Service
   const {
@@ -32,9 +32,10 @@ export default function VehicleForm() {
     error: categoriesError,
   } = useCategory();
 
-  const [formData, setFormData] = useState({
+  // ✅ CẢI TIẾN: Tách state cho dễ quản lý
+  const initialFormData = {
     licensePlate: "",
-    categoryId: "", // Trường này sẽ chứa CATEGORY_ID được chọn
+    categoryId: "",
     brand: "",
     model: "",
     color: "",
@@ -49,7 +50,17 @@ export default function VehicleForm() {
     currentMileage: "",
     serviceIds: [],
     carImages: [],
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+
+  // ✅ CẢI TIẾN: Thêm state cho xem trước ảnh và dọn dẹp memory leak
+  const [previewUrls, setPreviewUrls] = useState([]);
+
+  // ✅ CẢI TIẾN: Thêm state quản lý việc gửi form (submit)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
 
   // Xử lý thay đổi input
   const handleChange = (e) => {
@@ -63,71 +74,74 @@ export default function VehicleForm() {
     setFormData((prev) => {
       let newServiceIds;
       if (checked) {
-        // Thêm ID vào mảng nếu checkbox được chọn
         newServiceIds = [...prev.serviceIds, value];
       } else {
-        // Lọc bỏ ID khỏi mảng nếu checkbox bị bỏ chọn
         newServiceIds = prev.serviceIds.filter((id) => id !== value);
       }
       return { ...prev, serviceIds: newServiceIds };
     });
   };
 
-  // Xử lý chọn nhiều file ảnh
+  // ✅ CẢI TIẾN: Xử lý file và tạo URL xem trước
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({ ...prev, carImages: files }));
+
+    // Dọn dẹp các URL xem trước cũ
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+
+    // Tạo URL xem trước mới
+    const newUrls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(newUrls);
   };
 
-  // Gửi form-data
+  // ✅ CẢI TIẾN: Dọn dẹp URL xem trước khi component unmount
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
+  // ✅ CẢI TIẾN: Gửi form-data với quản lý state (loading, error, success)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
     try {
       const data = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "carImages") {
           value.forEach((file) => data.append("carImages", file));
         } else if (key === "serviceIds") {
-          // Vẫn append serviceIds dưới dạng chuỗi ngăn cách bằng dấu phẩy
           data.append("serviceIds", value.join(","));
         } else {
           data.append(key, value);
         }
       });
 
-      // ✅ Đã sửa: Gọi hàm createCar từ hook, hàm này sẽ sử dụng carApi.post("/car")
       const res = await createCar(data);
 
-      // Dòng này cần được kiểm tra lại field trả về từ API
-      alert("Thêm xe thành công! Mã xe: " + res.CAR_ID);
+      // ✅ CẢI TIẾN: Hiển thị thông báo thành công (thay vì alert)
+      setSubmitSuccess("Thêm xe thành công! Mã xe: " + (res.CAR_ID || res.id)); // Điều chỉnh field tùy theo API
+      setFormData(initialFormData); // Reset form
+      setPreviewUrls([]); // Reset ảnh xem trước
 
-      // Reset form data
-      setFormData({
-        licensePlate: "",
-        categoryId: "",
-        brand: "",
-        model: "",
-        color: "",
-        transmission: "AUTOMATIC",
-        fuelType: "PETROL",
-        status: "AVAILABLE",
-        pricePerHour: "",
-        pricePerDay: "",
-        branchId: "",
-        description: "",
-        insuranceInfo: "",
-        currentMileage: "",
-        serviceIds: [],
-        carImages: [],
-      });
+      // Tùy chọn: Xóa thông báo thành công sau vài giây
+      setTimeout(() => setSubmitSuccess(null), 5000);
     } catch (err) {
-      // Bắt lỗi được throw từ createCar hook
       console.error(err);
-      alert(err.message || "Lỗi khi gửi dữ liệu!");
+      // ✅ CẢI TIẾN: Hiển thị thông báo lỗi cụ thể theo yêu cầu (thay vì alert)
+      setSubmitError(
+        "Không thể thêm xe. Vui lòng kiểm tra lại biển số xe hoặc dữ liệu nhập liệu không đúng định dạng."
+      );
+    } finally {
+      setIsSubmitting(false); // Dừng trạng thái loading
     }
   };
 
-  // Xử lý trạng thái tải và lỗi
+  // Xử lý trạng thái tải dữ liệu ban đầu (services, branches...)
   if (isLoadingServices || isLoadingBranches || isLoadingCategories) {
     return (
       <Layout>
@@ -138,6 +152,7 @@ export default function VehicleForm() {
     );
   }
 
+  // Xử lý lỗi tải dữ liệu ban đầu
   if (servicesError || branchesError || categoriesError) {
     return (
       <Layout>
@@ -154,6 +169,8 @@ export default function VehicleForm() {
     <Layout>
       <Card title="Thêm / Chỉnh sửa Xe">
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* ... (Các trường input không đổi) ... */}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm mb-1">Biển số</label>
@@ -165,10 +182,9 @@ export default function VehicleForm() {
                 required
               />
             </div>
-            {/* TRƯỜNG DANH MỤC XE ĐÃ THAY ĐỔI */}
             <div>
               <label className="block text-sm mb-1">Mã danh mục</label>
-              <select // Thay thế input bằng select
+              <select
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
@@ -179,11 +195,8 @@ export default function VehicleForm() {
                   -- Chọn danh mục --
                 </option>
                 {categories.map((c) => (
-                  <option
-                    key={c.CATEGORY_ID}
-                    value={c.CATEGORY_ID} // Truyền CATEGORY_ID
-                  >
-                    {c.NAME} ({c.CODE}) {/* Hiển thị Tên và Mã CODE */}
+                  <option key={c.CATEGORY_ID} value={c.CATEGORY_ID}>
+                    {c.NAME} ({c.CODE})
                   </option>
                 ))}
               </select>
@@ -249,19 +262,6 @@ export default function VehicleForm() {
                 <option value="ELECTRIC">Điện</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm mb-1">Trạng thái</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="AVAILABLE">Available</option>
-                <option value="RENTED">Rented</option>
-                <option value="MAINTENANCE">Maintenance</option>
-              </select>
-            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -273,6 +273,7 @@ export default function VehicleForm() {
                 value={formData.pricePerHour}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                min="0" // ✅ CẢI TIẾN: Ngăn số âm
               />
             </div>
             <div>
@@ -283,11 +284,11 @@ export default function VehicleForm() {
                 value={formData.pricePerDay}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                min="0" // ✅ CẢI TIẾN: Ngăn số âm
               />
             </div>
           </div>
 
-          {/* TRƯỜNG CHI NHÁNH */}
           <div>
             <label className="block text-sm mb-1">Chi nhánh</label>
             <select
@@ -336,22 +337,21 @@ export default function VehicleForm() {
               value={formData.currentMileage}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              min="0" // ✅ CẢI TIẾN: Ngăn số âm
             />
           </div>
 
           <div>
             <label className="block text-sm mb-1">Dịch vụ đi kèm</label>
             <div className="border rounded p-3 space-y-2">
-              {" "}
-              {/* Thêm div bọc để định dạng */}
               {services.map((s) => (
                 <div key={s.SERVICE_ID} className="flex items-center">
                   <input
                     type="checkbox"
                     id={`service-${s.SERVICE_ID}`}
                     name="serviceIds"
-                    value={s.SERVICE_ID}
-                    checked={formData.serviceIds.includes(String(s.SERVICE_ID))} // Kiểm tra xem ID có trong mảng không
+                    value={String(s.SERVICE_ID)} // Chuyển sang string cho nhất quán
+                    checked={formData.serviceIds.includes(String(s.SERVICE_ID))}
                     onChange={handleServiceChange}
                     className="mr-2 h-4 w-4 text-indigo-600 border-gray-300 rounded"
                   />
@@ -365,6 +365,7 @@ export default function VehicleForm() {
               ))}
             </div>
           </div>
+
           <div>
             <label className="block text-sm mb-1">Hình ảnh xe</label>
             <input
@@ -374,12 +375,13 @@ export default function VehicleForm() {
               onChange={handleFileChange}
               className="w-full"
             />
-            {formData.carImages.length > 0 && (
+            {/* ✅ CẢI TIẾN: Hiển thị ảnh xem trước từ state `previewUrls` */}
+            {previewUrls.length > 0 && (
               <div className="mt-2 flex gap-2 flex-wrap">
-                {formData.carImages.map((file, idx) => (
+                {previewUrls.map((url, idx) => (
                   <img
                     key={idx}
-                    src={URL.createObjectURL(file)}
+                    src={url}
                     alt={`preview-${idx}`}
                     className="w-24 h-24 object-cover rounded"
                   />
@@ -388,8 +390,19 @@ export default function VehicleForm() {
             )}
           </div>
 
-          <div className="flex justify-end">
-            <Button type="submit">Lưu xe</Button>
+          <div className="flex justify-end items-center space-x-4">
+            {/* ✅ CẢI TIẾN: Hiển thị thông báo thành công hoặc lỗi */}
+            {submitSuccess && (
+              <p className="text-sm text-green-600">{submitSuccess}</p>
+            )}
+            {submitError && (
+              <p className="text-sm text-red-600">{submitError}</p>
+            )}
+
+            {/* ✅ CẢI TIẾN: Vô hiệu hóa nút và hiển thị loading text */}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Đang lưu..." : "Lưu xe"}
+            </Button>
           </div>
         </form>
       </Card>
