@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // 👈 1. Import useNavigate
 import Button from "../../components/ui/Button";
 import useAdminUsers from "../../hooks/useCustomer";
 import Layout from "../../components/layouts/Layout";
 
-export default function CustomerDetail({ onClose }) {
+export default function CustomerDetail() {
+  // 👈 2. Xóa prop 'onClose'
   const { id } = useParams();
+  const navigate = useNavigate(); // 👈 3. Khởi tạo navigate
   const { fetchUserById, verifyUser, loading } = useAdminUsers();
   const [user, setUser] = useState(null);
   const [verifying, setVerifying] = useState(false);
@@ -19,7 +21,7 @@ export default function CustomerDetail({ onClose }) {
     loadUser();
   }, [id, fetchUserById]);
 
-  // 🟢 Hàm xác minh người dùng
+  // 🟢 Hàm xác minh người dùng (KYC/Bằng lái)
   const handleVerify = async () => {
     if (!user) return;
     setVerifying(true);
@@ -33,6 +35,11 @@ export default function CustomerDetail({ onClose }) {
     } finally {
       setVerifying(false);
     }
+  };
+
+  // 👈 4. Tạo hàm xử lý đóng
+  const handleClose = () => {
+    navigate("/customers");
   };
 
   if (loading && !user)
@@ -60,6 +67,7 @@ export default function CustomerDetail({ onClose }) {
     PROVIDER_ID,
     CREATED_AT,
     UPDATED_AT,
+    IS_EMAIL_VERIFIED,
   } = user;
 
   return (
@@ -80,12 +88,25 @@ export default function CustomerDetail({ onClose }) {
             </h3>
             <p className="text-sm text-gray-500">Mã người dùng: {USER_ID}</p>
             <p className="text-sm text-gray-500">
+              <strong className="text-gray-600">Hồ sơ (KYC):</strong>
               {VERIFIED ? (
-                <span className="text-green-600 font-semibold">
+                <span className="ml-1 text-green-600 font-semibold">
                   Đã xác minh
                 </span>
               ) : (
-                <span className="text-yellow-600 font-semibold">
+                <span className="ml-1 text-yellow-600 font-semibold">
+                  Chưa xác minh
+                </span>
+              )}
+            </p>
+            <p className="text-sm text-gray-500">
+              <strong className="text-gray-600">Email:</strong>
+              {IS_EMAIL_VERIFIED ? (
+                <span className="ml-1 text-green-600 font-semibold">
+                  Đã xác minh
+                </span>
+              ) : (
+                <span className="ml-1 text-yellow-600 font-semibold">
                   Chưa xác minh
                 </span>
               )}
@@ -180,10 +201,11 @@ export default function CustomerDetail({ onClose }) {
               onClick={handleVerify}
               disabled={verifying}
             >
-              {verifying ? "Đang xác minh..." : "Xác minh người dùng"}
+              {verifying ? "Đang xác minh..." : "Xác minh người dùng (KYC)"}
             </Button>
           )}
-          <Button className="bg-gray-400" onClick={onClose}>
+          {/* 👈 5. Thay đổi onClick thành handleClose */}
+          <Button className="bg-gray-400" onClick={handleClose}>
             Đóng
           </Button>
         </div>

@@ -40,8 +40,8 @@ export default function VehicleUpdateForm() {
     pricePerDay: "",
     branchId: "",
     description: "",
-    insuranceInfo: "",
-    currentMileage: "",
+    insuranceInfo: "", // Đã có trong state
+    currentMileage: "", // Đã có trong state
     serviceIds: [],
   });
 
@@ -70,7 +70,7 @@ export default function VehicleUpdateForm() {
           color: carData.COLOR || "",
           transmission: carData.TRANSMISSION || "AUTOMATIC",
           fuelType: carData.FUEL_TYPE || "PETROL",
-          status: carData.STATUS || "AVAILABLE",
+          status: carData.STATUS || "AVAILABLE", // Dữ liệu này đã được set đúng
           pricePerHour: carData.PRICE_PER_HOUR || "",
           pricePerDay: carData.PRICE_PER_DAY || "",
           branchId: String(carData.BRANCH_ID || ""),
@@ -114,10 +114,21 @@ export default function VehicleUpdateForm() {
         if (key === "serviceIds") {
           data.append(key, value.join(","));
         } else {
-          data.append(key, value);
+          // Xử lý giá trị rỗng/null cho các trường số (ví dụ)
+          if (
+            (key === "pricePerHour" ||
+              key === "pricePerDay" ||
+              key === "currentMileage") &&
+            value === ""
+          ) {
+            data.append(key, null); // Hoặc 0 tùy vào logic backend
+          } else {
+            data.append(key, value);
+          }
         }
       });
-      console.log(data);
+
+      // console.log(Object.fromEntries(data.entries())); // Dùng cách này để debug FormData dễ hơn
       const res = await updateCar(carId, data);
       alert(`✅ Cập nhật xe thành công (ID: ${res.CAR_ID || carId})`);
     } catch (err) {
@@ -248,25 +259,34 @@ export default function VehicleUpdateForm() {
                 <option value="PETROL">Xăng</option>
                 <option value="DIESEL">Dầu</option>
                 <option value="ELECTRIC">Điện</option>
+                <option value="HYBRID">Hybrid</option>{" "}
+                {/* Thêm HYBRID nếu có */}
               </select>
             </div>
             <div>
               <label className="text-sm">Trạng thái</label>
               <select
                 name="status"
-                value={formData.status}
+                value={formData.status} // Value này đã đúng
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               >
-                <option value="AVAILABLE">Available</option>
-                <option value="RENTED">Rented</option>
-                <option value="MAINTENANCE">Maintenance</option>
+                {/* VẤN ĐỀ NẰM Ở ĐÂY:
+                  Thiếu các option RESERVED và DELETED
+                */}
+                <option value="AVAILABLE">Available (Sẵn sàng)</option>
+                <option value="RENTED">Rented (Đã thuê)</option>
+                <option value="MAINTENANCE">Maintenance (Bảo trì)</option>
+                <option value="RESERVED">Reserved (Đã đặt)</option>
+                <option value="DELETED">Deleted (Đã xóa)</option>
               </select>
             </div>
           </div>
 
-          {/* --- GIÁ --- */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* --- GIÁ & SỐ KM (BỔ SUNG) --- */}
+          <div className="grid grid-cols-3 gap-4">
+            {" "}
+            {/* Đổi thành 3 cột */}
             <div>
               <label className="text-sm">Giá / giờ</label>
               <input
@@ -283,6 +303,17 @@ export default function VehicleUpdateForm() {
                 type="number"
                 name="pricePerDay"
                 value={formData.pricePerDay}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+            {/* --- BỔ SUNG TRƯỜNG SỐ KM --- */}
+            <div>
+              <label className="text-sm">Số Km hiện tại</label>
+              <input
+                type="number"
+                name="currentMileage"
+                value={formData.currentMileage}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
@@ -336,15 +367,29 @@ export default function VehicleUpdateForm() {
             </div>
           </div>
 
-          {/* --- MÔ TẢ --- */}
-          <div>
-            <label className="text-sm">Mô tả</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
+          {/* --- MÔ TẢ & BẢO HIỂM (BỔ SUNG) --- */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm">Mô tả</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+                rows={3} // Thêm rows
+              />
+            </div>
+            {/* --- BỔ SUNG TRƯỜNG BẢO HIỂM --- */}
+            <div>
+              <label className="text-sm">Thông tin bảo hiểm</label>
+              <textarea
+                name="insuranceInfo"
+                value={formData.insuranceInfo}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+                rows={3} // Thêm rows
+              />
+            </div>
           </div>
 
           <div className="flex justify-end">
