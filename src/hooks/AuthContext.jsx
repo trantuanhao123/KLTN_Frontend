@@ -1,14 +1,39 @@
-// src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/auth.js"; // API helper
+
+// HÀM HELPER: Thêm hàm này vào đầu file AuthContext.jsx
+/**
+ * Giải mã phần payload của JWT mà không cần thư viện
+ * @param {string} token
+ * @returns {object | null}
+ */
+function parseJwtPayload(token) {
+  try {
+    const base64Url = token.split(".")[1]; // Lấy phần payload
+    if (!base64Url) return null;
+
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Lỗi giải mã JWT:", e);
+    return null;
+  }
+}
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("admin_user")) || null;
+      return JSON.parse(sessionStorage.getItem("admin_user")) || null;
     } catch (e) {
       console.error("Error parsing user from localStorage:", e);
       return null;
@@ -18,8 +43,8 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) localStorage.setItem("admin_user", JSON.stringify(user));
-    else localStorage.removeItem("admin_user");
+    if (user) sessionStorage.setItem("admin_user", JSON.stringify(user));
+    else sessionStorage.removeItem("admin_user");
   }, [user]);
 
   const login = async ({ email, password }) => {
@@ -33,7 +58,22 @@ export function AuthProvider({ children }) {
       const dataToProcess = apiResponse.data || apiResponse;
 
       if (dataToProcess && dataToProcess.user && dataToProcess.token) {
-        loggedInUser = { ...dataToProcess.user, token: dataToProcess.token };
+        // --- [SỬA ĐỔI BẮT ĐẦU] ---
+        const token = dataToProcess.token;
+        const payload = parseJwtPayload(token);
+
+        // Lấy 'exp' (là giây) và chuyển thành mili-giây
+        // Thêm 60 giây dự phòng cho đồng bộ thời gian
+        const expiresAt =
+          payload && payload.exp ? payload.exp * 1000 - 60000 : null;
+
+        loggedInUser = {
+          ...dataToProcess.user,
+          token: token,
+          expiresAt: expiresAt, // <-- LƯU THỜI GIAN HẾT HẠN
+        };
+        // --- [SỬA ĐỔI KẾT THÚC] ---
+
         setUser(loggedInUser);
         success = true;
         message = "Đăng nhập thành công!";
@@ -62,12 +102,11 @@ export function AuthProvider({ children }) {
     navigate("/login");
   };
 
-  // Hàm mới chỉ gửi email để nhận OTP reset password
+  // ... (Các hàm sendOtpForReset và resetPassword giữ nguyên)
   const sendOtpForReset = async (email) => {
     setLoading(true);
     try {
       const res = await authApi.sendOtpForReset({ email });
-      // API trả về true/false
       if (res.data?.success || res.success) {
         return { ok: true, message: res.data?.message || "OTP đã gửi." };
       } else {
@@ -83,12 +122,11 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
-  // Hàm verify OTP + reset password
+
   const resetPassword = async ({ email, otp, newPassword }) => {
     setLoading(true);
     try {
       const res = await authApi.resetPassword({ email, otp, newPassword });
-      // API trả về { message: "Đặt lại mật khẩu thành công." }
       return {
         ok: true,
         message: res.data?.message || "Đặt lại mật khẩu thành công.",
@@ -111,7 +149,7 @@ export function AuthProvider({ children }) {
         login,
         logout,
         loading,
-        sendOtpForReset, // chỉ còn hàm này cho reset
+        sendOtpForReset,
         resetPassword,
       }}
     >

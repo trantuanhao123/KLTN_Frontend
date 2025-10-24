@@ -19,7 +19,11 @@ import VehicleUpdateImage from "../pages/vehicles/VehicleUpdateImage";
 
 // ---------- BOOKINGS ----------
 import BookingList from "../pages/bookings/BookingList";
-
+import BookingForm from "../pages/bookings/BookingForm";
+import BookingUpdateForm from "../pages/bookings/BookingUpdateForm";
+import BookingDetail from "../pages/bookings/BookingDetail";
+import BookingPickup from "../pages/bookings/BookingPickup";
+import BookingComplete from "../pages/bookings/BookingComplete";
 // ---------- CUSTOMERS ----------
 import CustomerList from "../pages/customers/CustomerList";
 import CustomerDetail from "../pages/customers/CustomerDetail";
@@ -53,8 +57,21 @@ import BannerForm from "../pages/banner/BannerForm";
 import BannerUpdateForm from "../pages/banner/BannerUpdateForm";
 // -------------------- Protected Route --------------------
 function ProtectedRoute({ children }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  // 2. KIỂM TRA HẾT HẠN TOKEN
+  // (Code này giờ đã chạy đúng vì user.expiresAt đã tồn tại)
+  const isExpired = user.expiresAt && Date.now() > user.expiresAt;
+
+  if (isExpired) {
+    // Nếu token hết hạn:
+    console.warn("Phiên đăng nhập đã hết hạn. Đang đăng xuất...");
+    // 1. Gọi logout() để xóa user khỏi Context và localStorage
+    if (logout) logout();
+    // 2. Điều hướng về /login
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 }
 
@@ -124,6 +141,46 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <BookingList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings/new"
+        element={
+          <ProtectedRoute>
+            <BookingForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings/edit/:id"
+        element={
+          <ProtectedRoute>
+            <BookingUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings/:id"
+        element={
+          <ProtectedRoute>
+            <BookingDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings/pickup/:id"
+        element={
+          <ProtectedRoute>
+            <BookingPickup />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings/complete/:id"
+        element={
+          <ProtectedRoute>
+            <BookingComplete />
           </ProtectedRoute>
         }
       />

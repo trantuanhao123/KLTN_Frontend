@@ -13,7 +13,7 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use(
   (config) => {
     // Lấy thông tin user (bao gồm token) từ localStorage
-    const storedUser = localStorage.getItem("admin_user");
+    const storedUser = sessionStorage.getItem("admin_user");
     const user = storedUser ? JSON.parse(storedUser) : null;
     const token = user?.token;
 

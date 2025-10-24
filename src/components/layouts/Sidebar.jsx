@@ -25,7 +25,9 @@ export default function Sidebar() {
         <NavLink to="/" className={navItemClass} end>
           Trang Chủ
         </NavLink>
-
+        <NavLink to="/notification" className={navItemClass} end>
+          Thông Báo
+        </NavLink>
         {/* Nhóm quản lý */}
         <button
           onClick={() => setIsManageOpen((prev) => !prev)}
@@ -67,6 +69,9 @@ export default function Sidebar() {
             </NavLink>
             <NavLink to="/banners" className={navItemClass}>
               Banner
+            </NavLink>
+            <NavLink to="/refund-payments" className={navItemClass}>
+              Giao Dịch Hoàn Tiền
             </NavLink>
           </div>
         )}
