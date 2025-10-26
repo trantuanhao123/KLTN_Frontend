@@ -55,6 +55,11 @@ import BranchDetail from "../pages/branches/BranchDetail";
 import BannerList from "../pages/banner/BannerList";
 import BannerForm from "../pages/banner/BannerForm";
 import BannerUpdateForm from "../pages/banner/BannerUpdateForm";
+
+// // ---------- Discount ----------
+import DiscountList from "../pages/discounts/DiscountList";
+import DiscountForm from "../pages/discounts/DiscountForm";
+import DiscountUpdateForm from "../pages/discounts/DiscountUpdateForm";
 // -------------------- Protected Route --------------------
 function ProtectedRoute({ children }) {
   const { user, logout } = useAuth();
@@ -235,7 +240,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      -------- SERVICES (CRUD) --------
+      {/*-------- SERVICES (CRUD) -------- */}
       <Route
         path="/services"
         element={
@@ -340,6 +345,31 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <BannerUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- Discount -------- */}
+      <Route
+        path="/discounts"
+        element={
+          <ProtectedRoute>
+            <DiscountList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/discounts/new"
+        element={
+          <ProtectedRoute>
+            <DiscountForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/discounts/edit/:id"
+        element={
+          <ProtectedRoute>
+            <DiscountUpdateForm />
           </ProtectedRoute>
         }
       />

@@ -1,5 +1,3 @@
-// src/hooks/useCategory.js (Không sử dụng mapping)
-
 import { useState, useEffect } from "react";
 import categoriesApi from "../api/category";
 

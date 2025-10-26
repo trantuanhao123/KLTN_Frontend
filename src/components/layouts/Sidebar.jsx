@@ -70,6 +70,9 @@ export default function Sidebar() {
             <NavLink to="/banners" className={navItemClass}>
               Banner
             </NavLink>
+            <NavLink to="/discounts" className={navItemClass}>
+              Mã giảm giá
+            </NavLink>
             <NavLink to="/refund-payments" className={navItemClass}>
               Giao Dịch Hoàn Tiền
             </NavLink>
