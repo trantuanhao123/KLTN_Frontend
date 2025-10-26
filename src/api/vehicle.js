@@ -27,6 +27,9 @@ const carApi = {
     // PUT /api/car/:id
     return axiosClient.put(`/car/${id}`, formData);
   },
+  getAvailableCars: () => {
+    return axiosClient.get("/car/available");
+  },
 };
 
 export default carApi;

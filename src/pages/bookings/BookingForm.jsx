@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react"; // [MỚI] Thêm useEffect
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAdminCreateOrder } from "../../hooks/useOrder";
 import useCars from "../../hooks/useCar";
 import useAdminUsers from "../../hooks/useCustomer";
-import { useAuth } from "../../hooks/AuthContext"; // [MỚI] Import useAuth để kiểm tra
+import { useAuth } from "../../hooks/AuthContext";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 
-// ... (Các hằng số PAYMENT_METHOD_OPTIONS, PAYMENT_STATUS_OPTIONS giữ nguyên) ...
 const PAYMENT_METHOD_OPTIONS = [
   { label: "Tiền mặt", value: "CASH" },
   { label: "VNPAY", value: "VNPAY" },
@@ -29,30 +28,26 @@ export default function BookingForm() {
   const [createOrder, { loading, error: apiError }] = useAdminCreateOrder();
   const [formError, setFormError] = useState(null);
 
-  // [MỚI] Lấy context thật từ useAuth
   const { user: authUser } = useAuth();
 
-  const { cars, loading: carsLoading } = useCars();
+  // 🟢 Lấy danh sách xe khả dụng
+  const { availableCars, loading: carsLoading, fetchAvailableCars } = useCars();
 
-  // [CẬP NHẬT] Lấy thêm hàm `fetchAllUsers` từ hook
+  // 🟢 Lấy danh sách khách hàng
   const {
     users: customers,
     loading: customersLoading,
-    fetchAllUsers, // Lấy hàm này ra
+    fetchAllUsers,
   } = useAdminUsers();
 
-  // [MỚI] Thêm useEffect để tự gọi hàm fetch
+  // 🟢 Khi load form thì tự fetch dữ liệu
   useEffect(() => {
-    // Chúng ta sẽ bỏ qua logic kiểm tra token (localStorage) CŨ của hook
-    // Bằng cách TỰ GỌI hàm fetchAllUsers() MỘT LẦN
-    // khi component này được tải, miễn là user đã đăng nhập (từ sessionStorage).
     if (authUser?.token) {
       fetchAllUsers();
+      fetchAvailableCars(); // 🔥 Gọi API lấy xe khả dụng thay vì getAllCars
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser]); // Chỉ chạy 1 lần khi có thông tin user
+  }, [authUser, fetchAllUsers, fetchAvailableCars]);
 
-  // (State, handleChange, handleSubmit giữ nguyên)
   const [formData, setFormData] = useState({
     userId: "",
     carId: "",
@@ -87,8 +82,8 @@ export default function BookingForm() {
       ...rest,
       userId: parseInt(userId, 10),
       carId: parseInt(carId, 10),
-      startDate: startDate,
-      endDate: endDate,
+      startDate,
+      endDate,
       amountPaid: parseFloat(amountPaid) || 0,
     };
 
@@ -115,7 +110,6 @@ export default function BookingForm() {
 
       <Card>
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* ... (Phần hiển thị lỗi giữ nguyên) ... */}
           {formError && (
             <div className="p-3 bg-red-100 text-red-700 rounded">
               {formError}
@@ -128,8 +122,9 @@ export default function BookingForm() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Cột 1 */}
+            {/* --- Cột 1 --- */}
             <div className="space-y-4">
+              {/* Chọn khách hàng */}
               <div>
                 <label htmlFor="userId" className={labelBaseStyle}>
                   Khách hàng (USER_ID) *
@@ -149,7 +144,6 @@ export default function BookingForm() {
                       : "Vui lòng chọn khách hàng"}
                   </option>
                   {customers.map((user) => (
-                    // [SỬA LỖI TYPO] Sửa FULL_NAME thành FULLNAME
                     <option key={user.USER_ID} value={user.USER_ID}>
                       {user.USER_ID} - {user.FULLNAME || user.EMAIL}
                     </option>
@@ -157,10 +151,10 @@ export default function BookingForm() {
                 </select>
               </div>
 
-              {/* ... (Trường Car ID giữ nguyên) ... */}
+              {/* Chọn xe khả dụng */}
               <div>
                 <label htmlFor="carId" className={labelBaseStyle}>
-                  Xe (CAR_ID) *
+                  Xe khả dụng *
                 </label>
                 <select
                   id="carId"
@@ -172,9 +166,11 @@ export default function BookingForm() {
                   disabled={carsLoading}
                 >
                   <option value="">
-                    {carsLoading ? "Đang tải xe..." : "Vui lòng chọn xe"}
+                    {carsLoading
+                      ? "Đang tải xe..."
+                      : "Vui lòng chọn xe khả dụng"}
                   </option>
-                  {cars.map((car) => (
+                  {availableCars.map((car) => (
                     <option key={car.CAR_ID} value={car.CAR_ID}>
                       {car.CAR_ID} - {car.BRAND} {car.MODEL} (
                       {car.LICENSE_PLATE})
@@ -183,7 +179,6 @@ export default function BookingForm() {
                 </select>
               </div>
 
-              {/* ... (Trường Amount Paid giữ nguyên) ... */}
               <div>
                 <label htmlFor="amountPaid" className={labelBaseStyle}>
                   Số tiền đã trả (VNĐ)
@@ -201,7 +196,7 @@ export default function BookingForm() {
               </div>
             </div>
 
-            {/* ... (Cột 2 giữ nguyên) ... */}
+            {/* --- Cột 2 --- */}
             <div className="space-y-4">
               <div>
                 <label htmlFor="startDate" className={labelBaseStyle}>
@@ -270,7 +265,7 @@ export default function BookingForm() {
             </div>
           </div>
 
-          {/* ... (Ghi chú và Nút Submit giữ nguyên) ... */}
+          {/* Ghi chú */}
           <div>
             <label htmlFor="note" className={labelBaseStyle}>
               Ghi chú

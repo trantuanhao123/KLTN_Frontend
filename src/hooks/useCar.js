@@ -1,14 +1,13 @@
-// src/hooks/useCars.js
 import { useEffect, useState, useCallback } from "react";
 import carApi from "../api/vehicle";
 
 export default function useCars() {
   const [cars, setCars] = useState([]);
+  const [availableCars, setAvailableCars] = useState([]); // 🆕 Thêm state cho xe khả dụng
   const [selectedCar, setSelectedCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🟢 Lấy danh sách xe
   useEffect(() => {
     fetchAllCars();
   }, []);
@@ -24,20 +23,30 @@ export default function useCars() {
       setLoading(false);
     }
   }
+
+  // 🆕 Hàm mới lấy xe khả dụng
+  const fetchAvailableCars = useCallback(async () => {
+    try {
+      const res = await carApi.getAvailableCars();
+      setAvailableCars(res.data || []);
+      return res.data;
+    } catch (err) {
+      setError(err.message || "Không tải được danh sách xe khả dụng");
+      throw err;
+    }
+  }, []);
+
   const fetchCarById = useCallback(async (id) => {
     try {
-      // ❌ BỎ setLoading(true) để component cha tự quản lý loading ❌
       const res = await carApi.getCarById(id);
       setSelectedCar(res.data);
       return res.data;
     } catch (err) {
-      // ✅ Giữ lại setError để ghi nhận lỗi (nếu cần)
       setError(err.message || "Không tải được thông tin xe");
-      throw err; // Ném lỗi để component sử dụng có thể bắt được
-    } finally {
-      // ❌ BỎ setLoading(false) ❌
+      throw err;
     }
   }, []);
+
   async function createCar(formData) {
     try {
       const res = await carApi.createCar(formData);
@@ -47,24 +56,22 @@ export default function useCars() {
       throw new Error(err.response?.data?.message || "Không thể tạo xe");
     }
   }
+
   async function updateCar(id, formData) {
     try {
       const res = await carApi.updateCar(id, formData);
       const updatedCar = res.data;
-
-      // Cập nhật lại danh sách xe
       await fetchAllCars();
 
-      // Cập nhật selectedCar nếu nó là xe vừa được sửa
       if (selectedCar && selectedCar.CAR_ID === id) {
         setSelectedCar(updatedCar);
       }
-
       return updatedCar;
     } catch (err) {
       throw new Error(err.response?.data?.message || "Không thể cập nhật xe");
     }
   }
+
   async function deleteCar(id) {
     try {
       await carApi.deleteCar(id);
@@ -76,10 +83,12 @@ export default function useCars() {
 
   return {
     cars,
+    availableCars,
     selectedCar,
     loading,
     error,
     fetchAllCars,
+    fetchAvailableCars,
     fetchCarById,
     createCar,
     updateCar,

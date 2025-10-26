@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+// ✅ [THÊM MỚI] import useEffect
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
 import Button from "../../components/ui/Button";
-import Modal from "../../components/ui/Modal"; // ✅ modal có sẵn
+import Modal from "../../components/ui/Modal";
 import useAdminUsers from "../../hooks/useCustomer";
 
 export default function CustomerList() {
@@ -25,6 +26,14 @@ export default function CustomerList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null); // "verify" | "ban" | "restore"
   const [selectedUser, setSelectedUser] = useState(null);
+
+  // ✅ [THÊM MỚI] Tự động tải dữ liệu khi component được gắn (mount)
+  // Thêm hook useEffect để gọi fetchAllUsers() khi component được render lần đầu.
+  // Mảng rỗng [] đảm bảo nó chỉ chạy một lần (tương đương componentDidMount).
+  useEffect(() => {
+    fetchAllUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // [] đảm bảo effect này chỉ chạy 1 lần khi component mount
 
   // 🔎 Lọc user theo dropdown
   const filteredUsers = users.filter((u) => {
@@ -58,7 +67,7 @@ export default function CustomerList() {
         break;
     }
 
-    await fetchAllUsers();
+    await fetchAllUsers(); // Sau khi hành động, tải lại danh sách
     setModalOpen(false);
   };
 
@@ -82,13 +91,7 @@ export default function CustomerList() {
               <option value="deleted">Bị cấm</option>
             </select>
 
-            <Button
-              className="bg-green-600"
-              onClick={fetchAllUsers}
-              disabled={loading}
-            >
-              {loading ? "Đang tải..." : "Làm mới"}
-            </Button>
+            {/* ❌ [XÓA BỎ] Đã xóa nút "Làm mới" */}
           </div>
         </div>
 
@@ -97,72 +100,81 @@ export default function CustomerList() {
 
         {/* 🧾 Bảng danh sách */}
         <Card>
-          <Table
-            headers={[
-              "ID",
-              "Họ tên",
-              "Email",
-              "Điện thoại",
-              "Trạng thái",
-              "Thao tác",
-            ]}
-            data={filteredUsers}
-            renderRow={(u) => (
-              <>
-                <td className="px-4 py-2">{u.USER_ID}</td>
-                <td className="px-4 py-2">{u.FULLNAME || "—"}</td>
-                <td className="px-4 py-2">{u.EMAIL}</td>
-                <td className="px-4 py-2">{u.PHONE || "—"}</td>
-                <td className="px-4 py-2">
-                  {u.IS_DELETED ? (
-                    <span className="text-red-600 font-semibold">Bị cấm</span>
-                  ) : u.VERIFIED ? (
-                    <span className="text-green-600 font-semibold">
-                      Đã xác minh
-                    </span>
-                  ) : (
-                    <span className="text-yellow-600 font-semibold">
-                      Chưa xác minh
-                    </span>
-                  )}
-                </td>
+          {/* ✅ [THÊM MỚI] Hiển thị loading khi dữ liệu đang tải lần đầu */}
+          {loading && users.length === 0 ? (
+            <p className="p-4 text-center text-gray-500">Đang tải dữ liệu...</p>
+          ) : (
+            <Table
+              headers={[
+                "ID",
+                "Họ tên",
+                "Email",
+                "Điện thoại",
+                "Số đơn hàng",
+                "Trạng thái",
+                "Thao tác",
+              ]}
+              data={filteredUsers}
+              renderRow={(u) => (
+                <>
+                  <td className="px-4 py-2">{u.USER_ID}</td>
+                  <td className="px-4 py-2">{u.FULLNAME || "—"}</td>
+                  <td className="px-4 py-2">{u.EMAIL}</td>
+                  <td className="px-4 py-2">{u.PHONE || "—"}</td>
+                  <td className="px-4 py-2 text-center">{u.orderCount ?? 0}</td>
+                  <td className="px-4 py-2">
+                    {u.IS_DELETED ? (
+                      <span className="px-3 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                        Bị cấm
+                      </span>
+                    ) : u.VERIFIED ? (
+                      <span className="px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                        Đã xác minh
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">
+                        Chưa xác minh
+                      </span>
+                    )}
+                  </td>
 
-                <td className="px-4 py-2 flex gap-2">
-                  {u.IS_DELETED ? (
-                    // 🟠 Bị cấm → chỉ hiện Gỡ cấm
-                    <Button
-                      className="bg-amber-600"
-                      onClick={() => openModal("restore", u)}
-                    >
-                      Gỡ cấm
-                    </Button>
-                  ) : (
-                    <>
-                      <Link to={`/customers/${u.USER_ID}`}>
-                        <Button className="bg-blue-600">Chi tiết</Button>
-                      </Link>
-
-                      {!u.VERIFIED && (
-                        <Button
-                          className="bg-green-600"
-                          onClick={() => openModal("verify", u)}
-                        >
-                          Xác minh
-                        </Button>
-                      )}
-
+                  <td className="px-4 py-2 flex gap-2">
+                    {u.IS_DELETED ? (
                       <Button
-                        className="bg-red-600"
-                        onClick={() => openModal("ban", u)}
+                        className="bg-amber-600"
+                        onClick={() => openModal("restore", u)}
                       >
-                        Cấm
+                        Gỡ cấm
                       </Button>
-                    </>
-                  )}
-                </td>
-              </>
-            )}
-          />
+                    ) : (
+                      <>
+                        <Link to={`/customers/${u.USER_ID}`}>
+                          <Button className="bg-blue-600">Chi tiết</Button>
+                        </Link>
+                        <Link to={`/customers/orders/${u.USER_ID}`}>
+                          <Button className="bg-teal-600">Xem đơn hàng</Button>
+                        </Link>
+                        {!u.VERIFIED && (
+                          <Button
+                            className="bg-green-600"
+                            onClick={() => openModal("verify", u)}
+                          >
+                            Xác minh
+                          </Button>
+                        )}
+                        <Button
+                          className="bg-red-600"
+                          onClick={() => openModal("ban", u)}
+                        >
+                          Cấm
+                        </Button>
+                      </>
+                    )}
+                  </td>
+                </>
+              )}
+            />
+          )}
         </Card>
       </div>
 

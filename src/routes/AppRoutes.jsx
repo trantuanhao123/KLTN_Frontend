@@ -27,6 +27,7 @@ import BookingComplete from "../pages/bookings/BookingComplete";
 // ---------- CUSTOMERS ----------
 import CustomerList from "../pages/customers/CustomerList";
 import CustomerDetail from "../pages/customers/CustomerDetail";
+import CustomerOrderDetail from "../pages/customers/CustomerOrderDetail";
 
 // ---------- REPORTS ----------
 import Reports from "../pages/reports/Reports";
@@ -60,6 +61,10 @@ import BannerUpdateForm from "../pages/banner/BannerUpdateForm";
 import DiscountList from "../pages/discounts/DiscountList";
 import DiscountForm from "../pages/discounts/DiscountForm";
 import DiscountUpdateForm from "../pages/discounts/DiscountUpdateForm";
+
+// // ---------- Notification ----------
+import NotificationList from "../pages/notifications/NotificationList";
+import NotificationForm from "../pages/notifications/NotificationForm";
 // -------------------- Protected Route --------------------
 function ProtectedRoute({ children }) {
   const { user, logout } = useAuth();
@@ -203,6 +208,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <CustomerDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customers/orders/:userId"
+        element={
+          <ProtectedRoute>
+            <CustomerOrderDetail />
           </ProtectedRoute>
         }
       />
@@ -370,6 +383,23 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <DiscountUpdateForm />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- Notification -------- */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications/new"
+        element={
+          <ProtectedRoute>
+            <NotificationForm />
           </ProtectedRoute>
         }
       />

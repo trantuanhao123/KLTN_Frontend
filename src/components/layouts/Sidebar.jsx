@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import useNotifications from "../../hooks/useNotification";
 
 const navItemClass = ({ isActive }) =>
   `flex items-center gap-3 px-4 py-2 rounded-md transition-colors duration-200 ${
@@ -11,6 +12,7 @@ const navItemClass = ({ isActive }) =>
 
 export default function Sidebar() {
   const [isManageOpen, setIsManageOpen] = useState(false);
+  const { unreadCount } = useNotifications(); // ✅ thêm hook lấy số chưa đọc
 
   return (
     <aside className="w-64 bg-primary text-white p-4 flex flex-col">
@@ -25,9 +27,19 @@ export default function Sidebar() {
         <NavLink to="/" className={navItemClass} end>
           Trang Chủ
         </NavLink>
-        <NavLink to="/notification" className={navItemClass} end>
-          Thông Báo
+
+        {/* ✅ Thông báo có badge số lượng chưa đọc */}
+        <NavLink to="/notifications" className={navItemClass} end>
+          <span className="flex items-center justify-between w-full">
+            Thông Báo
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                {unreadCount}
+              </span>
+            )}
+          </span>
         </NavLink>
+
         {/* Nhóm quản lý */}
         <button
           onClick={() => setIsManageOpen((prev) => !prev)}
@@ -78,6 +90,7 @@ export default function Sidebar() {
             </NavLink>
           </div>
         )}
+
         {/* Các mục khác */}
         <NavLink to="/reports" className={navItemClass}>
           Báo cáo
