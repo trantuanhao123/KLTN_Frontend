@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import * as paymentApi from "../api/payment";
 
 /**
  * Hook để lấy danh sách chờ hoàn tiền
+ * TỰ ĐỘNG fetch khi component mount
  */
 export const useAdminGetPendingRefunds = () => {
   const [data, setData] = useState([]);
@@ -14,15 +15,28 @@ export const useAdminGetPendingRefunds = () => {
     setError(null);
     try {
       const response = await paymentApi.adminGetPendingRefunds();
-      setData(response.data);
+
+      const refunds = Array.isArray(response.data)
+        ? response.data
+        : response.data?.data || [];
+
+      console.log("✅ Refunds data:", refunds);
+      setData(refunds);
     } catch (err) {
+      console.error("❌ Error fetching refunds:", err);
+      console.error("Error details:", err.response?.data || err.message);
       setError(err);
+      setData([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Trả về { data, loading, error, refetch }
+  // TỰ ĐỘNG gọi API khi component mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return { data, loading, error, refetch: fetchData };
 };
 
@@ -41,9 +55,14 @@ export const useAdminConfirmRefund = () => {
     setData(null);
     try {
       const response = await paymentApi.adminConfirmRefund(paymentId);
-      setData(response.data);
-      return response.data;
+      console.log("✅ Confirm refund response:", response);
+
+      const result = response.data?.data || response.data;
+      setData(result);
+      return result;
     } catch (err) {
+      console.error("❌ Error confirming refund:", err);
+      console.error("Error details:", err.response?.data || err.message);
       setError(err);
       throw err;
     } finally {

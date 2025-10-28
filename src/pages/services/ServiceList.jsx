@@ -9,6 +9,7 @@ import Button from "../../components/ui/Button";
 import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
 function ServiceList() {
+  // --- Logic không đổi ---
   const { services, isLoading, error, removeService } = useServices();
   const [deleteId, setDeleteId] = useState(null);
 
@@ -21,7 +22,7 @@ function ServiceList() {
     }
   };
 
-  // Render mỗi row của table
+  // Render mỗi row của table (không đổi)
   const renderRow = (service) => (
     <>
       <td className="px-4 py-3">{service.SERVICE_ID}</td>
@@ -44,25 +45,30 @@ function ServiceList() {
       </td>
     </>
   );
+  // --- Hết logic không đổi ---
 
   return (
-    <Layout title="Danh sách dịch vụ">
+    // Bỏ prop 'title' không cần thiết
+    <Layout>
+      {/* 1. Đưa Tiêu đề và Nút Thêm Mới ra ngoài Card */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Quản lý dịch vụ</h1>
+        <Link to="/services/new">
+          {/* Bỏ class màu để dùng Button default (đồng bộ) */}
+          <Button>Thêm dịch vụ</Button>
+        </Link>
+      </div>
+
+      {/* 2. Card chỉ chứa nội dung (Table hoặc trạng thái) */}
       <Card>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Danh sách dịch vụ</h2>
-          <Link to="/services/new">
-            <Button className="bg-green-600 hover:bg-green-700">
-              Thêm dịch vụ
-            </Button>
-          </Link>
-        </div>
+        {/* Xóa div header bên trong Card */}
 
         {isLoading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-600">Đang tải dữ liệu...</p>
-          </div>
+          // 3. Đồng bộ style Loading/Error
+          <p className="p-4 text-gray-500">Đang tải dữ liệu...</p>
         ) : error ? (
-          <div className="text-center py-8">
+          // Đồng bộ style (giữ logic nút "Thử lại" vì hook không cấp refetch)
+          <div className="p-4">
             <p className="text-red-500">{error}</p>
             <Button
               onClick={() => window.location.reload()}
@@ -80,10 +86,12 @@ function ServiceList() {
         )}
       </Card>
 
+      {/* Modal giữ nguyên */}
       <ConfirmDeleteModal
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
+        // Prop 'carName' được giữ nguyên để không phá vỡ logic
         carName={services.find((s) => s.SERVICE_ID === deleteId)?.NAME}
       >
         Bạn có chắc chắn muốn xóa dịch vụ này không? Hành động này không thể

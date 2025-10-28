@@ -39,8 +39,8 @@ export default function BannerForm() {
 
     try {
       await bannerApi.createBanner(formData);
-      alert("Thêm banner thành công!");
-      navigate("/banners");
+      // alert("Thêm banner thành công!"); // <-- ĐÃ XÓA DÒNG NÀY
+      navigate("/banners"); // <-- Chỉ còn dòng chuyển hướng
     } catch (err) {
       console.error(err);
       alert("Lỗi khi thêm banner!");
@@ -49,7 +49,11 @@ export default function BannerForm() {
 
   return (
     <Layout>
-      <Card title="Thêm Banner Mới">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Thêm Banner Mới</h1>
+      </div>
+
+      <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Tiêu đề */}
           <div>
@@ -101,8 +105,8 @@ export default function BannerForm() {
               onChange={(e) => setForm({ ...form, status: e.target.value })}
               className="w-full border rounded px-3 py-2"
             >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Đã ẩn</option>
             </select>
           </div>
 

@@ -65,6 +65,9 @@ import DiscountUpdateForm from "../pages/discounts/DiscountUpdateForm";
 // // ---------- Notification ----------
 import NotificationList from "../pages/notifications/NotificationList";
 import NotificationForm from "../pages/notifications/NotificationForm";
+
+// // ---------- Refund ----------
+import RefundList from "../pages/payments/RefundList";
 // -------------------- Protected Route --------------------
 function ProtectedRoute({ children }) {
   const { user, logout } = useAuth();
@@ -101,6 +104,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      {/* -------- Refund Payment -------- */}
+      <Route
+        path="/payments/refunds"
+        element={
+          <ProtectedRoute>
+            <RefundList />
           </ProtectedRoute>
         }
       />

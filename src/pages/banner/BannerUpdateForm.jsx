@@ -47,14 +47,24 @@ export default function BannerUpdateForm() {
     formData.append("status", form.status);
     if (file) formData.append("banner_url", file);
 
-    await bannerApi.updateBanner(id, formData);
-    alert("Cập nhật banner thành công!");
-    navigate("/banners");
+    // Cập nhật: Bỏ try...catch để bắt lỗi nếu cần
+    try {
+      await bannerApi.updateBanner(id, formData);
+      // alert("Cập nhật banner thành công!"); // <-- ĐÃ XÓA DÒNG NÀY
+      navigate("/banners"); // <-- Chỉ còn dòng chuyển hướng
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi cập nhật banner!");
+    }
   };
 
   return (
     <Layout>
-      <Card title="Cập nhật Banner">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Cập nhật Banner</h1>
+      </div>
+
+      <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Tiêu đề</label>
@@ -113,8 +123,8 @@ export default function BannerUpdateForm() {
               onChange={(e) => setForm({ ...form, status: e.target.value })}
               className="w-full border rounded px-3 py-2"
             >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Đã ẩn</option>
             </select>
           </div>
 

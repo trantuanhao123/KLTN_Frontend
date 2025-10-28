@@ -76,10 +76,9 @@ export default function CustomerList() {
       <div className="space-y-4">
         {/* 🧭 Header */}
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h1 className="text-2xl font-bold text-gray-800">
             Danh sách khách hàng
-          </h2>
-
+          </h1>
           <div className="flex items-center gap-3">
             <select
               value={filterStatus}

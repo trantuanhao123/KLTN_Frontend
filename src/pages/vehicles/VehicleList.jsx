@@ -79,7 +79,7 @@ export default function VehicleList() {
   return (
     <Layout>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">Quản lý xe</h3>
+        <h1 className="text-2xl font-bold text-gray-800">Quản lý xe</h1>
         <Link to="/vehicles/new">
           <Button>Thêm xe</Button>
         </Link>

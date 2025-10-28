@@ -4,10 +4,12 @@ import useBranches from "../../hooks/useBranch";
 import Table from "../../components/ui/Table";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import Modal from "../../components/ui/Modal";
+// 1. Import Modal xác nhận chuẩn
+import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 import Layout from "../../components/layouts/Layout";
 
 export default function BranchList() {
+  // --- Logic không đổi ---
   const { branches, isLoading, error, fetchBranches, removeBranch } =
     useBranches();
 
@@ -35,87 +37,80 @@ export default function BranchList() {
     setSelectedBranchId(null);
     setShowModal(false);
   };
+  // --- Hết logic không đổi ---
+
+  // Lấy tên chi nhánh để hiển thị trong modal
+  const selectedBranchName =
+    branches.find((b) => b.BRANCH_ID === selectedBranchId)?.NAME || "";
 
   return (
     <Layout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl font-semibold text-gray-800">
-            Danh sách chi nhánh
-          </h1>
-          <Link to="/branches/new">
-            <Button>+ Thêm mới</Button>
-          </Link>
-        </div>
-
-        <Card>
-          {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Đang tải...</div>
-          ) : error ? (
-            <div className="text-center py-8 text-red-500">{error}</div>
-          ) : (
-            <Table
-              headers={[
-                "STT",
-                "Tên chi nhánh",
-                "Địa chỉ",
-                "Số điện thoại",
-                "Hành động",
-              ]}
-              data={branches}
-              renderRow={(branch, idx) => (
-                <>
-                  <td className="px-4 py-2">{idx + 1}</td>
-                  <td className="px-4 py-2 font-medium">{branch.NAME}</td>
-                  <td className="px-4 py-2">{branch.ADDRESS}</td>
-                  <td className="px-4 py-2">{branch.PHONE}</td>
-                  <td className="px-4 py-2 flex gap-2">
-                    <Link to={`/branches/detail/${branch.BRANCH_ID}`}>
-                      <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
-                        Chi Tiết
-                      </Button>
-                    </Link>
-                    <Link to={`/branches/edit/${branch.BRANCH_ID}`}>
-                      <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
-                        Sửa
-                      </Button>
-                    </Link>
-                    <Button
-                      className="bg-red-600 hover:bg-red-700 px-3 py-1 text-sm"
-                      onClick={() => handleDeleteClick(branch.BRANCH_ID)}
-                    >
-                      Xóa
-                    </Button>
-                  </td>
-                </>
-              )}
-            />
-          )}
-        </Card>
-
-        {/* Modal xác nhận xóa */}
-        <Modal
-          open={showModal}
-          title="Xác nhận xóa chi nhánh"
-          onClose={handleCancelDelete}
-        >
-          <p>Bạn có chắc chắn muốn xóa chi nhánh này không?</p>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button
-              className="bg-gray-400 hover:bg-gray-500"
-              onClick={handleCancelDelete}
-            >
-              Hủy
-            </Button>
-            <Button
-              className="bg-red-600 hover:bg-red-700"
-              onClick={handleConfirmDelete}
-            >
-              Xóa
-            </Button>
-          </div>
-        </Modal>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Danh sách chi nhánh
+        </h1>
+        <Link to="/branches/new">
+          <Button>Thêm mới</Button>
+        </Link>
       </div>
+
+      <Card>
+        {/* 4. Đồng bộ style Loading/Error (p-4) */}
+        {isLoading ? (
+          <p className="p-4 text-gray-500">Đang tải...</p>
+        ) : error ? (
+          <p className="p-4 text-red-500">{error}</p>
+        ) : (
+          <Table
+            headers={[
+              "STT",
+              "Tên chi nhánh",
+              "Địa chỉ",
+              "Số điện thoại",
+              "Hành động",
+            ]}
+            data={branches}
+            renderRow={(branch, idx) => (
+              <>
+                <td className="px-4 py-2">{idx + 1}</td>
+                <td className="px-4 py-2 font-medium">{branch.NAME}</td>
+                <td className="px-4 py-2">{branch.ADDRESS}</td>
+                <td className="px-4 py-2">{branch.PHONE}</td>
+                <td className="px-4 py-2 flex gap-2">
+                  <Link to={`/branches/detail/${branch.BRANCH_ID}`}>
+                    <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
+                      Chi Tiết
+                    </Button>
+                  </Link>
+                  <Link to={`/branches/edit/${branch.BRANCH_ID}`}>
+                    <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
+                      Sửa
+                    </Button>
+                  </Link>
+                  <Button
+                    className="bg-red-600 hover:bg-red-700 px-3 py-1 text-sm"
+                    onClick={() => handleDeleteClick(branch.BRANCH_ID)}
+                  >
+                    Xóa
+                  </Button>
+                </td>
+              </>
+            )}
+          />
+        )}
+      </Card>
+
+      {/* 5. Sử dụng ConfirmDeleteModal đồng bộ */}
+      <ConfirmDeleteModal
+        isOpen={showModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        carName={selectedBranchName} // Prop này dùng chung cho tên (xe, dịch vụ, chi nhánh)
+      >
+        Bạn có chắc chắn muốn xóa chi nhánh
+        <strong> {selectedBranchName} </strong>
+        không? Hành động này không thể hoàn tác.
+      </ConfirmDeleteModal>
     </Layout>
   );
 }

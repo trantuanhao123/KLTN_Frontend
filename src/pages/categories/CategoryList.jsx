@@ -65,9 +65,7 @@ function CategoryList() {
       <div className="space-y-6">
         {/* --- Header --- */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Quản lý danh mục
-          </h3>
+          <h1 className="text-2xl font-bold text-gray-800">Quản lý danh mục</h1>
           <Link to="/categories/new">
             <Button className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1">
               + Thêm danh mục

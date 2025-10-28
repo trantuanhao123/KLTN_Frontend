@@ -3,8 +3,9 @@ import useNotifications from "../../hooks/useNotification";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import NotificationForm from "./NotificationForm";
+import Table from "../../components/ui/Table"; // 1. Import Table
 import { Link } from "react-router-dom";
+// 2. Không cần import NotificationForm nữa
 
 export default function NotificationList() {
   const {
@@ -14,11 +15,11 @@ export default function NotificationList() {
     unreadCount,
     markAsRead,
     markAllAsRead,
-    refetch,
+    // refetch không cần nữa nếu bỏ form modal
   } = useNotifications();
 
   const [filter, setFilter] = useState("unread"); // "all" | "unread" | "read"
-  const [showForm, setShowForm] = useState(false);
+  // 3. Loại bỏ state showForm
 
   // Lọc danh sách dựa theo trạng thái đọc
   const filteredNotifications = notifications.filter((n) => {
@@ -28,76 +29,92 @@ export default function NotificationList() {
     return true;
   });
 
+  // 4. Định nghĩa headers cho bảng
+  const headers = [
+    "Trạng thái",
+    "Tiêu đề",
+    "Nội dung",
+    "Thời gian",
+    "Hành động",
+  ];
+
   return (
     <Layout>
-      <Card title={`Thông Báo (${unreadCount} chưa đọc)`} className="relative">
-        {/* Bộ lọc + Nút thêm */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">Lọc:</label>
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="border rounded-md px-3 py-1 text-sm"
-            >
-              <option value="unread">Chưa đọc</option>
-              <option value="read">Đã đọc</option>
-              <option value="all">Tất cả</option>
-            </select>
-          </div>
+      {/* 5. Tiêu đề và Nút Thêm Mới - GIỐNG VehicleList */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Quản lý Thông Báo ({unreadCount} chưa đọc)
+        </h1>
+        <Link to="/notifications/new">
+          <Button>+ Tạo thông báo</Button>
+        </Link>
+      </div>
 
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <Button
-                onClick={markAllAsRead}
-                className="bg-green-600 text-white text-sm"
-              >
-                Đánh dấu tất cả đã đọc
-              </Button>
-            )}
-            <Link
-              to="/notifications/new"
-              className="inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700 transition"
-            >
-              + Tạo thông báo
-            </Link>
-          </div>
+      {/* 6. Bộ lọc và Nút Hành Động - GIỐNG VehicleList */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3">
+          <label className="font-medium text-gray-700">
+            Lọc theo trạng thái:
+          </label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-1 text-sm"
+          >
+            <option value="unread">Chưa đọc</option>
+            <option value="read">Đã đọc</option>
+            <option value="all">Tất cả</option>
+          </select>
         </div>
 
-        {/* Nội dung danh sách */}
-        {loading && <p>Đang tải...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
-        {!loading && filteredNotifications.length === 0 && (
-          <p className="text-gray-500">Không có thông báo nào phù hợp.</p>
+        {unreadCount > 0 && (
+          <Button
+            onClick={markAllAsRead}
+            className="bg-green-600 text-white text-sm"
+          >
+            Đánh dấu tất cả đã đọc
+          </Button>
         )}
+      </div>
 
-        {filteredNotifications.length > 0 && (
-          <ul className="space-y-3">
-            {filteredNotifications.map((n) => (
-              <li
-                key={n.NOTIFICATION_ID}
-                className={`p-4 rounded-lg border transition-all ${
-                  n.IS_READ
-                    ? "bg-white text-gray-600"
-                    : "bg-blue-50 border-blue-300"
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3
-                      className={`font-semibold ${
-                        n.IS_READ ? "text-gray-800" : "text-blue-700"
-                      }`}
-                    >
-                      {n.TITLE}
-                    </h3>
-                    <p className="text-sm mt-1">{n.CONTENT}</p>
-                    <p className="text-xs text-gray-400 mt-2">
-                      {new Date(n.CREATED_AT).toLocaleString("vi-VN")}
-                    </p>
-                  </div>
-
+      {/* 7. Card chỉ chứa Bảng hoặc các trạng thái */}
+      <Card>
+        {loading ? (
+          <p className="p-4 text-gray-500">Đang tải thông báo...</p>
+        ) : error ? (
+          <p className="p-4 text-red-500">Lỗi: {error}</p>
+        ) : filteredNotifications.length === 0 ? (
+          <p className="p-4 text-gray-500">Không có thông báo nào phù hợp.</p>
+        ) : (
+          // 8. Sử dụng Table thay vì <ul>
+          <Table
+            headers={headers}
+            data={filteredNotifications}
+            renderRow={(n) => (
+              <>
+                <td className="px-4 py-2">
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      n.IS_READ
+                        ? "bg-gray-200 text-gray-700"
+                        : "bg-blue-100 text-blue-700 font-semibold"
+                    }`}
+                  >
+                    {n.IS_READ ? "Đã đọc" : "Chưa đọc"}
+                  </span>
+                </td>
+                <td
+                  className={`px-4 py-2 ${
+                    !n.IS_READ ? "font-bold text-gray-900" : "text-gray-700"
+                  }`}
+                >
+                  {n.TITLE}
+                </td>
+                <td className="px-4 py-2 text-sm text-gray-700">{n.CONTENT}</td>
+                <td className="px-4 py-2 text-xs text-gray-500">
+                  {new Date(n.CREATED_AT).toLocaleString("vi-VN")}
+                </td>
+                <td className="px-4 py-2">
                   {!n.IS_READ && (
                     <Button
                       onClick={() => markAsRead(n.NOTIFICATION_ID)}
@@ -107,23 +124,12 @@ export default function NotificationList() {
                       Đã đọc
                     </Button>
                   )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                </td>
+              </>
+            )}
+          />
         )}
       </Card>
-
-      {/* Form tạo thông báo */}
-      {showForm && (
-        <NotificationForm
-          onClose={() => setShowForm(false)}
-          onCreated={() => {
-            refetch();
-            setShowForm(false);
-          }}
-        />
-      )}
     </Layout>
   );
 }
