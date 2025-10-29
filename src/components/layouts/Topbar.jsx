@@ -7,9 +7,7 @@ export default function Topbar() {
   const { user, logout } = useAuth();
   console.log("User object in Topbar:", user);
   return (
-    // Cập nhật: justify-end -> justify-between
     <header className="h-16 flex items-center justify-between px-6 bg-white border-b">
-      {/* Thêm: Tiêu đề/Logo bên trái */}
       <div>
         <Link
           to="/"
@@ -23,7 +21,6 @@ export default function Topbar() {
       <div className="flex items-center gap-4">
         {user && (
           <span className="text-sm text-gray-700">
-            {/* Cập nhật: Hiển thị lại tên user */}
             Chào bạn, <strong className="font-medium">{user.FULLNAME}</strong>
           </span>
         )}

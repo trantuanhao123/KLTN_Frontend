@@ -43,7 +43,7 @@ export default function NotificationList() {
       {/* 5. Tiêu đề và Nút Thêm Mới - GIỐNG VehicleList */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">
-          Quản lý Thông Báo ({unreadCount} chưa đọc)
+          Thông Báo ({unreadCount} chưa đọc)
         </h1>
         <Link to="/notifications/new">
           <Button>+ Tạo thông báo</Button>

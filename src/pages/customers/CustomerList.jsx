@@ -77,7 +77,7 @@ export default function CustomerList() {
         {/* 🧭 Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">
-            Danh sách khách hàng
+            Quản lý khách hàng
           </h1>
           <div className="flex items-center gap-3">
             <select

@@ -39,9 +39,6 @@ export default function Sidebar() {
             )}
           </span>
         </NavLink>
-        <NavLink to="/incidents" className={navItemClass}>
-          Sự cố
-        </NavLink>
         {/* Nhóm quản lý */}
         <button
           onClick={() => setIsManageOpen((prev) => !prev)}
@@ -66,6 +63,18 @@ export default function Sidebar() {
             <NavLink to="/bookings" className={navItemClass}>
               Lịch thuê
             </NavLink>
+            <NavLink to="/incidents" className={navItemClass}>
+              Sự cố
+            </NavLink>
+            <NavLink to="/customers" className={navItemClass}>
+              Khách hàng
+            </NavLink>
+            <NavLink to="/discounts" className={navItemClass}>
+              Mã giảm giá
+            </NavLink>
+            <NavLink to="/payments/refunds" className={navItemClass}>
+              Giao Dịch Hoàn Tiền
+            </NavLink>
             <NavLink to="/categories" className={navItemClass}>
               Danh mục xe
             </NavLink>
@@ -75,17 +84,8 @@ export default function Sidebar() {
             <NavLink to="/branches" className={navItemClass}>
               Chi nhánh
             </NavLink>
-            <NavLink to="/customers" className={navItemClass}>
-              Khách hàng
-            </NavLink>
             <NavLink to="/banners" className={navItemClass}>
               Banner
-            </NavLink>
-            <NavLink to="/discounts" className={navItemClass}>
-              Mã giảm giá
-            </NavLink>
-            <NavLink to="/payments/refunds" className={navItemClass}>
-              Giao Dịch Hoàn Tiền
             </NavLink>
           </div>
         )}

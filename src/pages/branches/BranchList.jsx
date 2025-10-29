@@ -46,9 +46,7 @@ export default function BranchList() {
   return (
     <Layout>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Danh sách chi nhánh
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">Quản lý chi nhánh</h1>
         <Link to="/branches/new">
           <Button>Thêm mới</Button>
         </Link>

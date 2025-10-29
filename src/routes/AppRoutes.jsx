@@ -41,10 +41,10 @@ import CategoryUpdateForm from "../pages/categories/CategoryUpdateForm";
 import ServiceList from "../pages/services/ServiceList";
 import ServiceForm from "../pages/services/ServiceForm";
 import ServiceUpdateForm from "../pages/services/ServiceUpdateForm";
+
 // // ---------- INCIDENTS ----------
-// import IncidentList from "../pages/incidents/IncidentList";
-// import IncidentForm from "../pages/incidents/IncidentForm";
-// import IncidentUpdateForm from "../pages/incidents/IncidentUpdateForm";
+import IncidentList from "../pages/incidents/IncidentList";
+import IncidentUpdateForm from "../pages/incidents/IncidentUpdateForm";
 
 // // ---------- BRANCHES ----------
 import BranchList from "../pages/branches/BranchList";
@@ -291,19 +291,11 @@ export default function AppRoutes() {
         }
       />
       {/* -------- INCIDENTS (CRUD) -------- */}
-      {/* <Route
+      <Route
         path="/incidents"
         element={
           <ProtectedRoute>
             <IncidentList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/incidents/new"
-        element={
-          <ProtectedRoute>
-            <IncidentForm />
           </ProtectedRoute>
         }
       />
@@ -314,7 +306,7 @@ export default function AppRoutes() {
             <IncidentUpdateForm />
           </ProtectedRoute>
         }
-      /> */}
+      />
       {/* -------- BRANCHES (CRUD) -------- */}
       <Route
         path="/branches"
