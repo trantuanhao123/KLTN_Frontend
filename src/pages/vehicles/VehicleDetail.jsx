@@ -7,6 +7,46 @@ import useCars from "../../hooks/useCar";
 
 const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
+/**
+ * Helper để tạo màu cho status
+ */
+const getStatusClass = (status) => {
+  switch (status) {
+    case "AVAILABLE":
+      return "bg-green-100 text-green-700"; // Khả dụng
+    case "RESERVED":
+      return "bg-blue-100 text-blue-700"; // Đang giữ chỗ
+    case "RENTED":
+      return "bg-indigo-100 text-indigo-700"; // Đang thuê
+    case "MAINTENANCE":
+      return "bg-yellow-100 text-yellow-700"; // Đang bảo trì
+    case "DELETED":
+      return "bg-red-100 text-red-700"; // Đã xóa
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
+
+/**
+ * Helper để dịch trạng thái
+ */
+const translateStatus = (status) => {
+  switch (status) {
+    case "AVAILABLE":
+      return "Khả dụng";
+    case "RESERVED":
+      return "Đang được đặt";
+    case "RENTED":
+      return "Đang thuê";
+    case "MAINTENANCE":
+      return "Đang bảo trì";
+    case "DELETED":
+      return "Đã xóa";
+    default:
+      return status; // Trả về nguyên bản nếu không khớp
+  }
+};
+
 export default function VehicleDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -14,8 +54,14 @@ export default function VehicleDetail() {
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
-    if (id) fetchCarById(id);
-  }, [id]);
+    if (id) {
+      fetchCarById(id).catch((err) => {
+        // Xử lý lỗi nếu fetchCarById bị reject (đã throw trong hook)
+        console.error("Lỗi khi tải chi tiết xe:", err);
+        // Error state đã được set trong hook
+      });
+    }
+  }, [id, fetchCarById]); // Thêm fetchCarById vào dependency array
 
   if (loading)
     return (
@@ -119,13 +165,11 @@ export default function VehicleDetail() {
                 <p>
                   <strong>Trạng thái:</strong>{" "}
                   <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      car.STATUS === "AVAILABLE"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
+                    className={`px-2 py-1 rounded text-xs font-medium ${getStatusClass(
+                      car.STATUS
+                    )}`}
                   >
-                    {car.STATUS}
+                    {translateStatus(car.STATUS)}
                   </span>
                 </p>
                 <p>
@@ -181,6 +225,50 @@ export default function VehicleDetail() {
                 {car.INSURANCE_INFO || "Không có thông tin bảo hiểm."}
               </p>
             </div>
+
+            {/* Lịch sử trạng thái */}
+            {car.history && car.history.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                  Lịch sử trạng thái
+                </h3>
+                <div className="mt-3 max-h-72 overflow-y-auto space-y-3 pr-2">
+                  <ul className="space-y-3">
+                    {car.history.map((item) => (
+                      <li
+                        key={item.HISTORY_ID}
+                        className="p-3 bg-gray-50 rounded-md border border-gray-200"
+                      >
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.NOTE || "Cập nhật trạng thái"}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusClass(
+                              item.OLD_STATUS
+                            )}`}
+                          >
+                            {translateStatus(item.OLD_STATUS)}
+                          </span>
+                          <span className="text-gray-500">→</span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusClass(
+                              item.NEW_STATUS
+                            )}`}
+                          >
+                            {translateStatus(item.NEW_STATUS)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(item.CREATED_AT).toLocaleString("vi-VN")}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            {/* [KẾT THÚC] Lịch sử trạng thái */}
           </div>
         </div>
       </Card>

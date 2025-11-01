@@ -9,8 +9,49 @@ import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
 const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
+/**
+ * [MỚI] Helper để tạo màu cho status
+ * (Sử dụng màu sắc từ code cũ của bạn)
+ */
+const getStatusClass = (status) => {
+  switch (status) {
+    case "AVAILABLE":
+      return "bg-green-100 text-green-700";
+    case "RENTED":
+      return "bg-blue-100 text-blue-700"; // Giữ màu xanh từ code cũ
+    case "MAINTENANCE":
+      return "bg-yellow-100 text-yellow-700";
+    case "RESERVED":
+      return "bg-purple-100 text-purple-700"; // Giữ màu tím từ code cũ
+    case "DELETED":
+      return "bg-red-100 text-red-700"; // Thêm màu cho DELETED
+    default:
+      return "bg-gray-200 text-gray-700";
+  }
+};
+
+/**
+ * [MỚI] Helper để dịch trạng thái (từ input của bạn)
+ */
+const translateStatus = (status) => {
+  switch (status) {
+    case "AVAILABLE":
+      return "Khả dụng";
+    case "RESERVED":
+      return "Đang được đặt";
+    case "RENTED":
+      return "Đang thuê";
+    case "MAINTENANCE":
+      return "Đang bảo trì";
+    case "DELETED":
+      return "Đã xóa";
+    default:
+      return status; // Trả về nguyên bản nếu không khớp
+  }
+};
+
 export default function VehicleList() {
-  const { cars, loading, error, deleteCar } = useCars();
+  const { cars, loading, error, deleteCar, fetchAllCars } = useCars(); // Lấy thêm fetchAllCars
 
   // ✅ Local state để lưu danh sách hiển thị (đã lọc)
   const [filteredCars, setFilteredCars] = useState([]);
@@ -25,8 +66,11 @@ export default function VehicleList() {
   // Cập nhật filteredCars mỗi khi cars hoặc filterStatus thay đổi
   useEffect(() => {
     if (!cars) return;
-    if (filterStatus === "ALL") setFilteredCars(cars);
-    else setFilteredCars(cars.filter((car) => car.STATUS === filterStatus));
+    if (filterStatus === "ALL") {
+      setFilteredCars(cars);
+    } else {
+      setFilteredCars(cars.filter((car) => car.STATUS === filterStatus));
+    }
   }, [cars, filterStatus]);
 
   const headers = [
@@ -53,13 +97,9 @@ export default function VehicleList() {
 
     try {
       await deleteCar(carToDelete.CAR_ID);
-
-      // ✅ Thay vì xóa hẳn, ta cập nhật STATUS trong state:
-      setFilteredCars((prev) =>
-        prev.map((c) =>
-          c.CAR_ID === carToDelete.CAR_ID ? { ...c, STATUS: "DELETED" } : c
-        )
-      );
+      // deleteCar (trong hook) đã tự động gọi fetchAllCars(),
+      // nên useEffect ở trên sẽ tự chạy lại và cập nhật 'filteredCars'
+      // Không cần cập nhật state local ở đây.
 
       setIsModalOpen(false);
       setCarToDelete(null);
@@ -85,7 +125,7 @@ export default function VehicleList() {
         </Link>
       </div>
 
-      {/* 🆕 Bộ lọc trạng thái */}
+      {/* [SỬA ĐỔI] Bộ lọc trạng thái (dùng bản dịch mới) */}
       <div className="flex items-center gap-3 mb-4">
         <label className="font-medium text-gray-700">
           Lọc theo trạng thái:
@@ -96,8 +136,8 @@ export default function VehicleList() {
           className="border border-gray-300 rounded px-3 py-1 text-sm"
         >
           <option value="ALL">Tất cả</option>
-          <option value="AVAILABLE">Sẵn sàng</option>
-          <option value="RESERVED">Đã đặt trước</option>
+          <option value="AVAILABLE">Khả dụng</option>
+          <option value="RESERVED">Đang được đặt</option>
           <option value="RENTED">Đang thuê</option>
           <option value="MAINTENANCE">Đang bảo trì</option>
           <option value="DELETED">Đã xóa</option>
@@ -137,23 +177,18 @@ export default function VehicleList() {
                     </div>
                   </div>
                 </td>
+
+                {/* [SỬA ĐỔI] Hiển thị trạng thái */}
                 <td className="px-4 py-2">
                   <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      row.STATUS === "AVAILABLE"
-                        ? "bg-green-100 text-green-700"
-                        : row.STATUS === "RENTED"
-                        ? "bg-blue-100 text-blue-700"
-                        : row.STATUS === "MAINTENANCE"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : row.STATUS === "RESERVED"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
+                    className={`px-2 py-1 rounded text-xs font-medium ${getStatusClass(
+                      row.STATUS
+                    )}`}
                   >
-                    {row.STATUS}
+                    {translateStatus(row.STATUS)}
                   </span>
                 </td>
+
                 <td className="px-4 py-2 font-medium">
                   {Number(row.PRICE_PER_DAY).toLocaleString("vi-VN")}₫
                 </td>
