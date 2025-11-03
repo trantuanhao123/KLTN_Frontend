@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+// [THAY ĐỔI] Import tất cả các biến thể Button
+import Button, {
+  ButtonCreate,
+  ButtonRead,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import Table from "../../components/ui/Table";
 import { Link } from "react-router-dom";
 import useCars from "../../hooks/useCar";
@@ -9,30 +15,23 @@ import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
 const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
-/**
- * [MỚI] Helper để tạo màu cho status
- * (Sử dụng màu sắc từ code cũ của bạn)
- */
+// ... (Giữ nguyên các hàm getStatusClass và translateStatus) ...
 const getStatusClass = (status) => {
   switch (status) {
     case "AVAILABLE":
       return "bg-green-100 text-green-700";
     case "RENTED":
-      return "bg-blue-100 text-blue-700"; // Giữ màu xanh từ code cũ
+      return "bg-blue-100 text-blue-700";
     case "MAINTENANCE":
       return "bg-yellow-100 text-yellow-700";
     case "RESERVED":
-      return "bg-purple-100 text-purple-700"; // Giữ màu tím từ code cũ
+      return "bg-purple-100 text-purple-700";
     case "DELETED":
-      return "bg-red-100 text-red-700"; // Thêm màu cho DELETED
+      return "bg-red-100 text-red-700";
     default:
       return "bg-gray-200 text-gray-700";
   }
 };
-
-/**
- * [MỚI] Helper để dịch trạng thái (từ input của bạn)
- */
 const translateStatus = (status) => {
   switch (status) {
     case "AVAILABLE":
@@ -46,24 +45,20 @@ const translateStatus = (status) => {
     case "DELETED":
       return "Đã xóa";
     default:
-      return status; // Trả về nguyên bản nếu không khớp
+      return status;
   }
 };
+// ...
 
 export default function VehicleList() {
-  const { cars, loading, error, deleteCar, fetchAllCars } = useCars(); // Lấy thêm fetchAllCars
-
-  // ✅ Local state để lưu danh sách hiển thị (đã lọc)
+  const { cars, loading, error, deleteCar, fetchAllCars } = useCars();
   const [filteredCars, setFilteredCars] = useState([]);
   const [filterStatus, setFilterStatus] = useState("ALL");
-
-  // ✅ State modal xác nhận xóa
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carToDelete, setCarToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
 
-  // Cập nhật filteredCars mỗi khi cars hoặc filterStatus thay đổi
   useEffect(() => {
     if (!cars) return;
     if (filterStatus === "ALL") {
@@ -82,25 +77,18 @@ export default function VehicleList() {
     "Hành động",
   ];
 
-  // 🆕 Mở modal xác nhận xóa
   const handleDeleteClick = (car) => {
     setCarToDelete(car);
     setIsModalOpen(true);
     setDeleteError(null);
   };
 
-  // 🆕 Xác nhận xóa (soft delete)
   const handleConfirmDelete = async () => {
     if (!carToDelete) return;
     setIsDeleting(true);
     setDeleteError(null);
-
     try {
       await deleteCar(carToDelete.CAR_ID);
-      // deleteCar (trong hook) đã tự động gọi fetchAllCars(),
-      // nên useEffect ở trên sẽ tự chạy lại và cập nhật 'filteredCars'
-      // Không cần cập nhật state local ở đây.
-
       setIsModalOpen(false);
       setCarToDelete(null);
     } catch (err) {
@@ -121,11 +109,12 @@ export default function VehicleList() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý xe</h1>
         <Link to="/vehicles/new">
-          <Button>Thêm xe</Button>
+          {/* [THAY ĐỔI] Sử dụng ButtonCreate */}
+          <ButtonCreate>Thêm xe</ButtonCreate>
         </Link>
       </div>
 
-      {/* [SỬA ĐỔI] Bộ lọc trạng thái (dùng bản dịch mới) */}
+      {/* Bộ lọc trạng thái (giữ nguyên) */}
       <div className="flex items-center gap-3 mb-4">
         <label className="font-medium text-gray-700">
           Lọc theo trạng thái:
@@ -177,8 +166,6 @@ export default function VehicleList() {
                     </div>
                   </div>
                 </td>
-
-                {/* [SỬA ĐỔI] Hiển thị trạng thái */}
                 <td className="px-4 py-2">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${getStatusClass(
@@ -188,34 +175,41 @@ export default function VehicleList() {
                     {translateStatus(row.STATUS)}
                   </span>
                 </td>
-
                 <td className="px-4 py-2 font-medium">
                   {Number(row.PRICE_PER_DAY).toLocaleString("vi-VN")}₫
                 </td>
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
+                    {/* [THAY ĐỔI] Sử dụng ButtonRead */}
+                    {/* Vẫn truyền className cho kích thước, các biến thể sẽ tự động merge vào */}
                     <Link to={`/vehicles/${row.CAR_ID}`}>
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1">
+                      <ButtonRead className="text-sm px-3 py-1">
                         Chi tiết
-                      </Button>
+                      </ButtonRead>
                     </Link>
+
+                    {/* [THAY ĐỔI] Sử dụng ButtonEdit */}
                     <Link to={`/vehicles/editImage/${row.CAR_ID}`}>
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1">
+                      <ButtonEdit className="text-sm px-3 py-1">
                         Sửa Hình
-                      </Button>
+                      </ButtonEdit>
                     </Link>
+
+                    {/* [THAY ĐỔI] Sử dụng ButtonEdit */}
                     <Link to={`/vehicles/edit/${row.CAR_ID}`}>
-                      <Button className="bg-amber-600 hover:bg-amber-700 text-white text-sm px-3 py-1">
+                      <ButtonEdit className="text-sm px-3 py-1">
                         Sửa Thông Tin
-                      </Button>
+                      </ButtonEdit>
                     </Link>
+
+                    {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
                     {row.STATUS !== "DELETED" && (
-                      <Button
-                        className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
+                      <ButtonDelete
+                        className="text-sm px-3 py-1"
                         onClick={() => handleDeleteClick(row)}
                       >
                         Xóa
-                      </Button>
+                      </ButtonDelete>
                     )}
                   </div>
                 </td>

@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import useNotifications from "../../hooks/useNotification";
+// [THAY ĐỔI] Import ButtonCreate
+import Button, { ButtonCreate } from "../../components/ui/Button";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-import Table from "../../components/ui/Table"; // 1. Import Table
+import Table from "../../components/ui/Table";
 import { Link } from "react-router-dom";
-// 2. Không cần import NotificationForm nữa
-
+import useNotifications from "../../hooks/useNotification";
 export default function NotificationList() {
   const {
     notifications,
@@ -15,13 +14,10 @@ export default function NotificationList() {
     unreadCount,
     markAsRead,
     markAllAsRead,
-    // refetch không cần nữa nếu bỏ form modal
   } = useNotifications();
 
   const [filter, setFilter] = useState("unread"); // "all" | "unread" | "read"
-  // 3. Loại bỏ state showForm
 
-  // Lọc danh sách dựa theo trạng thái đọc
   const filteredNotifications = notifications.filter((n) => {
     if (filter === "all") return true;
     if (filter === "unread") return n.IS_READ === 0;
@@ -29,7 +25,6 @@ export default function NotificationList() {
     return true;
   });
 
-  // 4. Định nghĩa headers cho bảng
   const headers = [
     "Trạng thái",
     "Tiêu đề",
@@ -40,17 +35,16 @@ export default function NotificationList() {
 
   return (
     <Layout>
-      {/* 5. Tiêu đề và Nút Thêm Mới - GIỐNG VehicleList */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">
           Thông Báo ({unreadCount} chưa đọc)
         </h1>
         <Link to="/notifications/new">
-          <Button>+ Tạo thông báo</Button>
+          {/* [THAY ĐỔI] Sử dụng ButtonCreate */}
+          <ButtonCreate>Thêm thông báo</ButtonCreate>
         </Link>
       </div>
 
-      {/* 6. Bộ lọc và Nút Hành Động - GIỐNG VehicleList */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
           <label className="font-medium text-gray-700">
@@ -68,16 +62,16 @@ export default function NotificationList() {
         </div>
 
         {unreadCount > 0 && (
-          <Button
+          // [THAY ĐỔI] Sử dụng ButtonCreate
+          <ButtonCreate
             onClick={markAllAsRead}
-            className="bg-green-600 text-white text-sm"
+            className="text-sm" // Giữ nguyên style text-sm từ code cũ
           >
             Đánh dấu tất cả đã đọc
-          </Button>
+          </ButtonCreate>
         )}
       </div>
 
-      {/* 7. Card chỉ chứa Bảng hoặc các trạng thái */}
       <Card>
         {loading ? (
           <p className="p-4 text-gray-500">Đang tải thông báo...</p>
@@ -86,7 +80,6 @@ export default function NotificationList() {
         ) : filteredNotifications.length === 0 ? (
           <p className="p-4 text-gray-500">Không có thông báo nào phù hợp.</p>
         ) : (
-          // 8. Sử dụng Table thay vì <ul>
           <Table
             headers={headers}
             data={filteredNotifications}
@@ -116,13 +109,13 @@ export default function NotificationList() {
                 </td>
                 <td className="px-4 py-2">
                   {!n.IS_READ && (
-                    <Button
+                    // [THAY ĐỔI] Sử dụng ButtonCreate + style button nhỏ
+                    <ButtonCreate
                       onClick={() => markAsRead(n.NOTIFICATION_ID)}
-                      size="sm"
-                      className="text-xs bg-green-600 text-white"
+                      className="text-sm px-3 py-1" // Style đồng bộ
                     >
                       Đã đọc
-                    </Button>
+                    </ButtonCreate>
                   )}
                 </td>
               </>

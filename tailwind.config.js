@@ -1,7 +1,8 @@
 const { COLORS, FONT_SIZES, SPACING } = require("./src/utils/theme");
 
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
+  // <-- [SỬA ĐỔI] Dùng module.exports
   content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {

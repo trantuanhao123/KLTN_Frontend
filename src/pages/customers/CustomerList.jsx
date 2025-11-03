@@ -1,10 +1,16 @@
-// ✅ [THÊM MỚI] import useEffect
+// ✅ Import useEffect
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
+// [THAY ĐỔI] Import các biến thể Button
+import Button, {
+  ButtonCreate,
+  ButtonRead,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
 import useAdminUsers from "../../hooks/useCustomer";
 
@@ -27,9 +33,7 @@ export default function CustomerList() {
   const [modalAction, setModalAction] = useState(null); // "verify" | "ban" | "restore"
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // ✅ [THÊM MỚI] Tự động tải dữ liệu khi component được gắn (mount)
-  // Thêm hook useEffect để gọi fetchAllUsers() khi component được render lần đầu.
-  // Mảng rỗng [] đảm bảo nó chỉ chạy một lần (tương đương componentDidMount).
+  // ✅ Tự động tải dữ liệu khi component được gắn (mount)
   useEffect(() => {
     fetchAllUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,6 +75,9 @@ export default function CustomerList() {
     setModalOpen(false);
   };
 
+  // [THAY ĐỔI] Thêm className cho button nhỏ trong bảng
+  const tableButtonStyles = "text-sm px-3 py-1";
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -89,8 +96,6 @@ export default function CustomerList() {
               <option value="active">Còn hoạt động</option>
               <option value="deleted">Bị cấm</option>
             </select>
-
-            {/* ❌ [XÓA BỎ] Đã xóa nút "Làm mới" */}
           </div>
         </div>
 
@@ -99,7 +104,6 @@ export default function CustomerList() {
 
         {/* 🧾 Bảng danh sách */}
         <Card>
-          {/* ✅ [THÊM MỚI] Hiển thị loading khi dữ liệu đang tải lần đầu */}
           {loading && users.length === 0 ? (
             <p className="p-4 text-center text-gray-500">Đang tải dữ liệu...</p>
           ) : (
@@ -137,38 +141,55 @@ export default function CustomerList() {
                     )}
                   </td>
 
-                  <td className="px-4 py-2 flex gap-2">
-                    {u.IS_DELETED ? (
-                      <Button
-                        className="bg-amber-600"
-                        onClick={() => openModal("restore", u)}
-                      >
-                        Gỡ cấm
-                      </Button>
-                    ) : (
-                      <>
-                        <Link to={`/customers/${u.USER_ID}`}>
-                          <Button className="bg-blue-600">Chi tiết</Button>
-                        </Link>
-                        <Link to={`/customers/orders/${u.USER_ID}`}>
-                          <Button className="bg-teal-600">Xem đơn hàng</Button>
-                        </Link>
-                        {!u.VERIFIED && (
-                          <Button
-                            className="bg-green-600"
-                            onClick={() => openModal("verify", u)}
-                          >
-                            Xác minh
-                          </Button>
-                        )}
-                        <Button
-                          className="bg-red-600"
-                          onClick={() => openModal("ban", u)}
+                  {/* [THAY ĐỔI] Cột Thao tác */}
+                  <td className="px-4 py-2">
+                    <div className="flex gap-2">
+                      {u.IS_DELETED ? (
+                        // Dùng ButtonEdit (màu vàng) cho "Gỡ cấm"
+                        <ButtonEdit
+                          className={tableButtonStyles}
+                          onClick={() => openModal("restore", u)}
                         >
-                          Cấm
-                        </Button>
-                      </>
-                    )}
+                          Gỡ cấm
+                        </ButtonEdit>
+                      ) : (
+                        <>
+                          {/* Dùng ButtonRead (màu xanh dương) */}
+                          <Link to={`/customers/${u.USER_ID}`}>
+                            <ButtonRead className={tableButtonStyles}>
+                              Chi tiết
+                            </ButtonRead>
+                          </Link>
+
+                          {/* Giữ Button (default) và override màu teal */}
+                          <Link to={`/customers/orders/${u.USER_ID}`}>
+                            <Button
+                              className={`bg-teal-600 hover:bg-teal-700 ${tableButtonStyles}`}
+                            >
+                              Xem đơn hàng
+                            </Button>
+                          </Link>
+
+                          {/* Dùng ButtonCreate (màu xanh lá) */}
+                          {!u.VERIFIED && (
+                            <ButtonCreate
+                              className={tableButtonStyles}
+                              onClick={() => openModal("verify", u)}
+                            >
+                              Xác minh
+                            </ButtonCreate>
+                          )}
+
+                          {/* Dùng ButtonDelete (màu đỏ) */}
+                          <ButtonDelete
+                            className={tableButtonStyles}
+                            onClick={() => openModal("ban", u)}
+                          >
+                            Cấm
+                          </ButtonDelete>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </>
               )}
@@ -195,24 +216,30 @@ export default function CustomerList() {
             </p>
 
             <div className="flex justify-end gap-3">
+              {/* [THAY ĐỔI] Nút Hủy (màu xám) */}
               <Button
-                className="bg-gray-400"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800"
                 onClick={() => setModalOpen(false)}
               >
                 Hủy
               </Button>
-              <Button
-                className={
-                  modalAction === "ban"
-                    ? "bg-red-600"
-                    : modalAction === "verify"
-                    ? "bg-green-600"
-                    : "bg-amber-600"
-                }
-                onClick={handleConfirmAction}
-              >
-                Xác nhận
-              </Button>
+
+              {/* [THAY ĐỔI] Dùng các variant button thay vì className động */}
+              {modalAction === "ban" && (
+                <ButtonDelete onClick={handleConfirmAction}>
+                  Xác nhận Cấm
+                </ButtonDelete>
+              )}
+              {modalAction === "verify" && (
+                <ButtonCreate onClick={handleConfirmAction}>
+                  Xác nhận
+                </ButtonCreate>
+              )}
+              {modalAction === "restore" && (
+                <ButtonEdit onClick={handleConfirmAction}>
+                  Xác nhận Gỡ cấm
+                </ButtonEdit>
+              )}
             </div>
           </>
         )}

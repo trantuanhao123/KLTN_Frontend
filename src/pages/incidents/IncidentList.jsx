@@ -5,11 +5,12 @@ import { useIncidentsList } from "../../hooks/useIncident";
 
 import Card from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
+// [THAY ĐỔI] Import các biến thể Button
+import Button, { ButtonRead, ButtonDelete } from "../../components/ui/Button";
 import Layout from "../../components/layouts/Layout";
 import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
-// [SỬA] 1. Tạo bản đồ tra cứu Tiếng Việt
+// ... (Các hàm statusMap, getStatusBadge giữ nguyên) ...
 const statusMap = {
   NEW: "Mới",
   IN_PROGRESS: "Đang xử lý",
@@ -17,7 +18,6 @@ const statusMap = {
   CLOSED: "Đã đóng",
 };
 
-// [SỬA] 2. Cập nhật hàm getStatusBadge
 const getStatusBadge = (status) => {
   const styles = {
     NEW: "bg-blue-100 text-blue-800",
@@ -25,17 +25,13 @@ const getStatusBadge = (status) => {
     RESOLVED: "bg-green-100 text-green-800",
     CLOSED: "bg-gray-100 text-gray-800",
   };
-
-  // Lấy tên Tiếng Việt, nếu không có thì dùng tên gốc
   const vietnameseStatus = statusMap[status] || status;
-
   return (
     <span
       className={`px-2 py-0.5 rounded-full text-xs font-medium ${
         styles[status] || styles["CLOSED"]
       }`}
     >
-      {/* Hiển thị tên Tiếng Việt */}
       {vietnameseStatus}
     </span>
   );
@@ -78,12 +74,15 @@ export default function IncidentList() {
     "Mã Đơn",
     "User ID",
     "Mô tả",
-    "Trạng thái", // Đã là tiếng việt
+    "Trạng thái",
     "Ngày tạo",
     "Hành động",
   ];
 
   const selectedIncidentIdentifier = `Sự cố #${selectedIncidentId}`;
+
+  // [THAY ĐỔI] Style cho button nhỏ trong bảng
+  const tableButtonStyles = "text-sm px-3 py-1";
 
   const renderRow = (item) => (
     <>
@@ -91,25 +90,29 @@ export default function IncidentList() {
       <td className="px-4 py-2 font-medium">{item.ORDER_ID}</td>
       <td className="px-4 py-2 ">{item.USER_ID}</td>
       <td className="px-4 py-2 max-w-xs truncate">{item.DESCRIPTION}</td>
-      <td className="px-4 py-2">
-        {/* Hàm này giờ sẽ trả về Tiếng Việt */}
-        {getStatusBadge(item.STATUS)}
-      </td>
+      <td className="px-4 py-2">{getStatusBadge(item.STATUS)}</td>
       <td className="px-4 py-2">
         {new Date(item.CREATED_AT).toLocaleString("vi-VN")}
       </td>
-      <td className="px-4 py-2 flex gap-2">
-        <Link to={`/incidents/edit/${item.INCIDENT_ID}`}>
-          <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
-            Chi Tiết Và Xử Lý
-          </Button>
-        </Link>
-        <Button
-          className="bg-red-600 hover:bg-red-700 px-3 py-1 text-sm"
-          onClick={() => handleDeleteClick(item.INCIDENT_ID)}
-        >
-          Xóa
-        </Button>
+
+      {/* [THAY ĐỔI] Bọc button trong 1 div để căn giữa */}
+      <td className="px-4 py-2">
+        <div className="flex gap-2">
+          {/* [THAY ĐỔI] Sử dụng ButtonRead */}
+          <Link to={`/incidents/edit/${item.INCIDENT_ID}`}>
+            <ButtonRead className={tableButtonStyles}>
+              Chi Tiết Và Xử Lý
+            </ButtonRead>
+          </Link>
+
+          {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
+          <ButtonDelete
+            className={tableButtonStyles}
+            onClick={() => handleDeleteClick(item.INCIDENT_ID)}
+          >
+            Xóa
+          </ButtonDelete>
+        </div>
       </td>
     </>
   );
@@ -130,6 +133,7 @@ export default function IncidentList() {
         )}
       </Card>
 
+      {/* Modal này đã được đồng bộ từ trước */}
       <ConfirmDeleteModal
         isOpen={showModal}
         onClose={handleCancelDelete}

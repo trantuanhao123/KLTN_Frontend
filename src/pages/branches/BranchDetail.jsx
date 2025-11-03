@@ -99,7 +99,7 @@ export default function BranchDetail() {
             />
             <DetailRow
               label="Tọa độ"
-              value={`Latitude: ${selectedBranch.LATITUDE}, Longitude: ${selectedBranch.LONGITUDE}`}
+              value={`Vĩ độ: ${selectedBranch.LATITUDE}, Kinh độ: ${selectedBranch.LONGITUDE}`}
             />
             <DetailRow
               label="Ngày tạo"

@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import Layout from "../../components/layouts/Layout";
 import useBanners from "../../hooks/useBanner";
 import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
+import Button, {
+  ButtonCreate,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
-// Cập nhật: Thêm map để dịch trạng thái
 const STATUS_MAP = {
   ACTIVE: "Đang hoạt động",
   INACTIVE: "Đã ẩn",
@@ -23,7 +26,7 @@ export default function BannerList() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý Banner</h1>
         <Link to="/banners/new">
-          <Button>Thêm Banner</Button>
+          <ButtonCreate>Thêm Banner</ButtonCreate>
         </Link>
       </div>
 
@@ -49,6 +52,7 @@ export default function BannerList() {
             data={banners}
             renderRow={(item) => (
               <>
+                {/* [FIX] Xóa 'align-top', để table-cell tự căn giữa */}
                 <td className="px-4 py-2">{item.BANNER_ID}</td>
                 <td className="px-4 py-2">{item.TITLE}</td>
                 <td className="px-4 py-2">{item.DESCRIPTION}</td>
@@ -70,32 +74,39 @@ export default function BannerList() {
                         : "bg-gray-200 text-gray-500"
                     }`}
                   >
-                    {/* Cập nhật: Hiển thị Tiếng Việt qua Map */}
                     {STATUS_MAP[item.STATUS] || item.STATUS}
                   </span>
                 </td>
-                <td className="px-4 py-2 flex gap-2">
-                  <Link to={`/banners/edit/${item.BANNER_ID}`}>
-                    <Button className="bg-yellow-500">Sửa</Button>
-                  </Link>
-                  <Button
-                    className="bg-red-500"
-                    onClick={() => {
-                      if (
-                        window.confirm("Bạn chắc chắn muốn xóa banner này?")
-                      ) {
-                        deleteBanner(item.BANNER_ID);
-                      }
-                    }}
-                  >
-                    Xóa
-                  </Button>
-                  <Button
-                    className="bg-blue-500"
-                    onClick={() => toggleStatus(item.BANNER_ID)}
-                  >
-                    {item.STATUS === "ACTIVE" ? "Ẩn" : "Hiện"}
-                  </Button>
+
+                {/* [FIX] Xóa 'flex' và 'align-top' khỏi <td>
+                  Bọc các button vào một <div> với 'flex'
+                */}
+                <td className="px-4 py-2">
+                  <div className="flex gap-2">
+                    <Link to={`/banners/edit/${item.BANNER_ID}`}>
+                      <ButtonEdit className="text-sm px-3 py-1">Sửa</ButtonEdit>
+                    </Link>
+
+                    <ButtonDelete
+                      className="text-sm px-3 py-1"
+                      onClick={() => {
+                        if (
+                          window.confirm("Bạn chắc chắn muốn xóa banner này?")
+                        ) {
+                          deleteBanner(item.BANNER_ID);
+                        }
+                      }}
+                    >
+                      Xóa
+                    </ButtonDelete>
+
+                    <Button
+                      className="bg-blue-600 hover:bg-blue-700 text-sm px-3 py-1"
+                      onClick={() => toggleStatus(item.BANNER_ID)}
+                    >
+                      {item.STATUS === "ACTIVE" ? "Ẩn" : "Hiện"}
+                    </Button>
+                  </div>
                 </td>
               </>
             )}
@@ -103,7 +114,7 @@ export default function BannerList() {
         )}
       </Card>
 
-      {/* Modal zoom hình */}
+      {/* Modal zoom hình (Giữ nguyên) */}
       {zoomImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"

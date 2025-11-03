@@ -3,8 +3,13 @@ import { Link } from "react-router-dom";
 import useBranches from "../../hooks/useBranch";
 import Table from "../../components/ui/Table";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-// 1. Import Modal xác nhận chuẩn
+// [THAY ĐỔI] Import các biến thể Button
+import Button, {
+  ButtonCreate,
+  ButtonRead,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 import Layout from "../../components/layouts/Layout";
 
@@ -39,7 +44,6 @@ export default function BranchList() {
   };
   // --- Hết logic không đổi ---
 
-  // Lấy tên chi nhánh để hiển thị trong modal
   const selectedBranchName =
     branches.find((b) => b.BRANCH_ID === selectedBranchId)?.NAME || "";
 
@@ -48,12 +52,12 @@ export default function BranchList() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý chi nhánh</h1>
         <Link to="/branches/new">
-          <Button>Thêm mới</Button>
+          {/* [THAY ĐỔI] Sử dụng ButtonCreate */}
+          <ButtonCreate>Thêm chi nhánh</ButtonCreate>
         </Link>
       </div>
 
       <Card>
-        {/* 4. Đồng bộ style Loading/Error (p-4) */}
         {isLoading ? (
           <p className="p-4 text-gray-500">Đang tải...</p>
         ) : error ? (
@@ -74,23 +78,30 @@ export default function BranchList() {
                 <td className="px-4 py-2 font-medium">{branch.NAME}</td>
                 <td className="px-4 py-2">{branch.ADDRESS}</td>
                 <td className="px-4 py-2">{branch.PHONE}</td>
-                <td className="px-4 py-2 flex gap-2">
-                  <Link to={`/branches/detail/${branch.BRANCH_ID}`}>
-                    <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
-                      Chi Tiết
-                    </Button>
-                  </Link>
-                  <Link to={`/branches/edit/${branch.BRANCH_ID}`}>
-                    <Button className="bg-blue-600 hover:bg-blue-700 px-3 py-1 text-sm">
-                      Sửa
-                    </Button>
-                  </Link>
-                  <Button
-                    className="bg-red-600 hover:bg-red-700 px-3 py-1 text-sm"
-                    onClick={() => handleDeleteClick(branch.BRANCH_ID)}
-                  >
-                    Xóa
-                  </Button>
+
+                {/* [THAY ĐỔI] Bọc các button trong 1 div để căn giữa */}
+                <td className="px-4 py-2">
+                  <div className="flex gap-2">
+                    {/* [THAY ĐỔI] Sử dụng ButtonRead */}
+                    <Link to={`/branches/detail/${branch.BRANCH_ID}`}>
+                      <ButtonRead className="px-3 py-1 text-sm">
+                        Chi Tiết
+                      </ButtonRead>
+                    </Link>
+
+                    {/* [THAY ĐỔI] Sử dụng ButtonEdit (fix màu từ xanh -> vàng) */}
+                    <Link to={`/branches/edit/${branch.BRANCH_ID}`}>
+                      <ButtonEdit className="px-3 py-1 text-sm">Sửa</ButtonEdit>
+                    </Link>
+
+                    {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
+                    <ButtonDelete
+                      className="px-3 py-1 text-sm"
+                      onClick={() => handleDeleteClick(branch.BRANCH_ID)}
+                    >
+                      Xóa
+                    </ButtonDelete>
+                  </div>
                 </td>
               </>
             )}
@@ -98,12 +109,12 @@ export default function BranchList() {
         )}
       </Card>
 
-      {/* 5. Sử dụng ConfirmDeleteModal đồng bộ */}
+      {/* Modal này đã được đồng bộ từ trước */}
       <ConfirmDeleteModal
         isOpen={showModal}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        carName={selectedBranchName} // Prop này dùng chung cho tên (xe, dịch vụ, chi nhánh)
+        carName={selectedBranchName} // Prop này dùng chung cho tên
       >
         Bạn có chắc chắn muốn xóa chi nhánh
         <strong> {selectedBranchName} </strong>

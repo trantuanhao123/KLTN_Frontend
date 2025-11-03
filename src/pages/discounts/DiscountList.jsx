@@ -4,7 +4,12 @@ import { Link } from "react-router-dom";
 import { useDiscountManagement } from "../../hooks/useDiscount";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+// [THAY ĐỔI] Import các biến thể Button
+import Button, {
+  ButtonCreate,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
 import Table from "../../components/ui/Table";
 
@@ -25,12 +30,12 @@ export default function DiscountList() {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState(null); // ✅ đổi tên để phân biệt rõ
+  const [deleteError, setDeleteError] = useState(null);
 
   const handleDeleteClick = (discount) => {
     setSelectedDiscount(discount);
     setDeleteModalOpen(true);
-    setDeleteError(null); // ✅ xóa lỗi cũ khi mở modal mới
+    setDeleteError(null);
   };
 
   const closeModal = () => {
@@ -39,6 +44,7 @@ export default function DiscountList() {
     setIsDeleting(false);
   };
 
+  // ... (Các hàm getTypeLabel, getStatusLabel giữ nguyên) ...
   const getTypeLabel = (type) => {
     switch (type) {
       case "PERCENT":
@@ -70,9 +76,8 @@ export default function DiscountList() {
 
     try {
       await removeDiscount(selectedDiscount.DISCOUNT_ID);
-      closeModal(); // ✅ thành công: đóng modal
+      closeModal();
     } catch (err) {
-      // ❌ lỗi: đóng modal và hiển thị lỗi ngoài list
       closeModal();
       setDeleteError(err.message || "Lỗi không xác định khi xóa mã giảm giá.");
     } finally {
@@ -92,6 +97,9 @@ export default function DiscountList() {
     "Trạng thái",
     "Hành động",
   ];
+
+  // [THAY ĐỔI] Thêm style cho button nhỏ
+  const tableButtonStyles = "text-sm px-3 py-1";
 
   const renderRow = (discount) => (
     <>
@@ -122,16 +130,19 @@ export default function DiscountList() {
       </td>
       <td className="px-4 py-2">
         <div className="flex gap-2">
+          {/* [THAY ĐỔI] Sử dụng ButtonEdit */}
           <Link to={`/discounts/edit/${discount.DISCOUNT_ID}`}>
-            <Button className="text-sm !py-1 !px-2">Sửa</Button>
+            <ButtonEdit className={tableButtonStyles}>Sửa</ButtonEdit>
           </Link>
-          <Button
+
+          {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
+          <ButtonDelete
             onClick={() => handleDeleteClick(discount)}
-            className="text-sm !py-1 !px-2 bg-red-600 hover:opacity-90"
+            className={tableButtonStyles}
             disabled={isDeleting}
           >
             Xóa
-          </Button>
+          </ButtonDelete>
         </div>
       </td>
     </>
@@ -144,11 +155,12 @@ export default function DiscountList() {
           Quản lý Mã giảm giá
         </h1>
         <Link to="/discounts/new">
-          <Button>Thêm mới</Button>
+          {/* [THAY ĐỔI] Sử dụng ButtonCreate */}
+          <ButtonCreate>Thêm mã giảm giá</ButtonCreate>
         </Link>
       </div>
 
-      {/* ✅ Hiển thị lỗi xóa (nếu có) */}
+      {/* ... (Phần hiển thị lỗi giữ nguyên) ... */}
       {deleteError && (
         <div className="mb-4 p-3 rounded text-sm bg-red-100 text-red-700 flex justify-between items-center">
           <span>{deleteError}</span>
@@ -162,7 +174,7 @@ export default function DiscountList() {
       )}
 
       <Card>
-        {/* ✅ Chỉ hiển thị lỗi tải dữ liệu ban đầu, không hiển thị lỗi xóa ở đây */}
+        {/* ... (Phần Loading/Error/Table giữ nguyên) ... */}
         {error && discounts.length === 0 ? (
           <div className="text-center text-red-600 py-6">
             Lỗi khi tải dữ liệu: {error.message || "Không thể kết nối máy chủ"}
@@ -178,6 +190,7 @@ export default function DiscountList() {
         )}
       </Card>
 
+      {/* [THAY ĐỔI] Cập nhật button trong Modal */}
       {selectedDiscount && (
         <Modal
           open={isDeleteModalOpen}
@@ -193,20 +206,19 @@ export default function DiscountList() {
           </p>
 
           <div className="flex justify-end gap-2 pt-4">
+            {/* [THAY ĐỔI] Nút Hủy (màu xám) */}
             <Button
               onClick={closeModal}
               disabled={isDeleting}
-              className="bg-gray-200 text-gray-800 hover:opacity-90"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800"
             >
               Hủy
             </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:opacity-90"
-            >
+
+            {/* [THAY ĐỔI] Nút Xóa (màu đỏ) */}
+            <ButtonDelete onClick={handleConfirmDelete} disabled={isDeleting}>
               {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
-            </Button>
+            </ButtonDelete>
           </div>
         </Modal>
       )}

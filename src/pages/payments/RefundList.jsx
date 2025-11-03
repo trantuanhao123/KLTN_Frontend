@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import Button, { ButtonCreate, ButtonRead } from "../../components/ui/Button";
 import Table from "../../components/ui/Table";
-import Modal from "../../components/ui/Modal"; // Import Modal
+import Modal from "../../components/ui/Modal";
 import {
   useAdminGetPendingRefunds,
   useAdminConfirmRefund,
@@ -15,47 +15,40 @@ export default function RefundList() {
   const { data, loading, error, refetch } = useAdminGetPendingRefunds();
   const [confirmRefund, { loading: confirming }] = useAdminConfirmRefund();
 
-  // State cho Modal
+  // ... (Toàn bộ logic state và hàm giữ nguyên) ...
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState(null);
-  const [confirmError, setConfirmError] = useState(null); // State mới để lưu lỗi
+  const [confirmError, setConfirmError] = useState(null);
 
-  // Hàm mở modal và lưu ID
   const handleOpenConfirmModal = (paymentId) => {
     setSelectedPaymentId(paymentId);
-    setConfirmError(null); // Reset lỗi cũ khi mở modal
+    setConfirmError(null);
     setIsModalOpen(true);
   };
-
-  // Hàm đóng modal
   const handleCloseModal = () => {
-    if (confirming) return; // Không cho đóng khi đang xử lý
+    if (confirming) return;
     setIsModalOpen(false);
     setSelectedPaymentId(null);
-    setConfirmError(null); // Dọn dẹp lỗi khi đóng
+    setConfirmError(null);
   };
-
-  // Hàm thực thi xác nhận
   const handleExecuteConfirm = async () => {
     if (!selectedPaymentId) return;
-    setConfirmError(null); // Xóa lỗi trước khi thử lại
-
+    setConfirmError(null);
     try {
       await confirmRefund(selectedPaymentId);
       refetch();
-      handleCloseModal(); // Đóng modal sau khi thành công
+      handleCloseModal();
     } catch (err) {
       console.error("Confirm refund error:", err);
       const errorMsg =
         err.response?.data?.message || err.message || "Có lỗi xảy ra";
-      setConfirmError(errorMsg); // <-- THAY BẰNG SET STATE LỖI
+      setConfirmError(errorMsg);
     }
   };
 
   const formatCurrency = (amount) => {
     return `${Number(amount).toLocaleString("vi-VN")}₫`;
   };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString("vi-VN", {
       year: "numeric",
@@ -66,15 +59,18 @@ export default function RefundList() {
     });
   };
 
-  // Render mỗi row
+  const tableButtonStyles = "text-sm px-3 py-1";
+
+  // [ĐÃ SỬA] Render mỗi row
   const renderRow = (item, idx) => (
     <>
-      {/* Cập nhật: py-3 -> py-2 */}
       <td className="px-4 py-2">
-        <span className="font-mono text-sm">{item.PAYMENT_ID}</span>
+        {/* [FIX] Bỏ text-sm, đổi font-mono -> font-medium */}
+        <span className="font-medium">{item.PAYMENT_ID}</span>
       </td>
       <td className="px-4 py-2">
-        <span className="font-mono text-sm">{item.ORDER_CODE}</span>
+        {/* [FIX] Bỏ text-sm, đổi font-mono -> font-medium */}
+        <span className="font-medium">{item.ORDER_CODE}</span>
       </td>
       <td className="px-4 py-2">
         <span className="font-semibold text-red-600">
@@ -82,21 +78,25 @@ export default function RefundList() {
         </span>
       </td>
       <td className="px-4 py-2">
+        {/* (Giữ nguyên) text-xs là chuẩn cho badge */}
         <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
           {item.METHOD}
         </span>
       </td>
       <td className="px-4 py-2">
+        {/* (Giữ nguyên) font-mono, text-xs là hợp lý cho mã giao dịch phụ */}
         <span className="font-mono text-xs text-gray-600">
           {item.TRANSACTION_CODE}
         </span>
       </td>
       <td className="px-4 py-2">
+        {/* (Giữ nguyên) text-sm là chuẩn cho ngày giờ */}
         <span className="text-sm text-gray-700">
           {formatDate(item.TRANSACTION_DATE)}
         </span>
       </td>
       <td className="px-4 py-2">
+        {/* (Giữ nguyên) text-sm là chuẩn cho ghi chú */}
         <span
           className="text-sm text-gray-600 max-w-xs truncate block"
           title={item.NOTE}
@@ -105,22 +105,20 @@ export default function RefundList() {
         </span>
       </td>
       <td className="px-4 py-2">
+        {/* (Giữ nguyên) Phần button đã đồng bộ */}
         <div className="flex gap-2">
           {item.ORDER_ID && (
             <Link to={`/bookings/${item.ORDER_ID}`}>
-              <Button variant="secondary" size="sm">
-                Chi tiết
-              </Button>
+              <ButtonRead className={tableButtonStyles}>Chi tiết</ButtonRead>
             </Link>
           )}
-          <Button
-            variant="primary"
-            size="sm"
+          <ButtonCreate
+            className={tableButtonStyles}
             disabled={confirming}
-            onClick={() => handleOpenConfirmModal(item.PAYMENT_ID)} // Mở modal
+            onClick={() => handleOpenConfirmModal(item.PAYMENT_ID)}
           >
             {confirming ? "Đang xử lý..." : "Xác nhận"}
-          </Button>
+          </ButtonCreate>
         </div>
       </td>
     </>
@@ -128,22 +126,20 @@ export default function RefundList() {
 
   return (
     <Layout>
-      {/* Cập nhật: Thêm tiêu đề h1 và nút Tải lại bên ngoài Card */}
+      {/* ... (Toàn bộ phần Header, Card, Modal giữ nguyên) ... */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">
           Quản lý giao dịch cần hoàn tiền
         </h1>
         <Button
           onClick={refetch}
-          variant="secondary"
-          size="sm"
+          className={`bg-gray-300 hover:bg-gray-400 text-gray-800 ${tableButtonStyles}`}
           disabled={loading}
         >
           {loading ? "Đang tải..." : "Tải lại"}
         </Button>
       </div>
 
-      {/* Cập nhật: Thêm khu vực hiển thị số lượng (tương tự filter) */}
       {!loading && !error && data && data.length > 0 && (
         <div className="flex items-center gap-3 mb-4">
           <p className="text-sm text-gray-700">
@@ -153,9 +149,7 @@ export default function RefundList() {
         </div>
       )}
 
-      {/* Cập nhật: Xóa prop 'title' khỏi Card */}
       <Card>
-        {/* Cập nhật: Đơn giản hóa các trạng thái loading, error, empty */}
         {loading ? (
           <p className="p-4 text-gray-500">Đang tải dữ liệu...</p>
         ) : error ? (
@@ -167,7 +161,6 @@ export default function RefundList() {
             Không có giao dịch nào cần hoàn tiền.
           </p>
         ) : (
-          // Cập nhật: Xóa div bao bọc count
           <Table
             headers={[
               "Mã GD",
@@ -185,7 +178,6 @@ export default function RefundList() {
         )}
       </Card>
 
-      {/* Cập nhật Modal (giữ nguyên) */}
       <Modal
         open={isModalOpen}
         onClose={handleCloseModal}
@@ -200,7 +192,6 @@ export default function RefundList() {
           </p>
         </div>
 
-        {/* VÙNG HIỂN THỊ LỖI MỚI */}
         {confirmError && (
           <div className="mt-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm">
             <strong>Xác nhận thất bại:</strong> {confirmError}
@@ -209,19 +200,15 @@ export default function RefundList() {
 
         <div className="flex justify-end gap-3 mt-5">
           <Button
-            variant="secondary"
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800"
             onClick={handleCloseModal}
             disabled={confirming}
           >
             Hủy
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleExecuteConfirm}
-            disabled={confirming}
-          >
+          <ButtonCreate onClick={handleExecuteConfirm} disabled={confirming}>
             {confirming ? "Đang xử lý..." : "Xác nhận"}
-          </Button>
+          </ButtonCreate>
         </div>
       </Modal>
     </Layout>

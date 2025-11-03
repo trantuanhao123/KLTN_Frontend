@@ -5,7 +5,12 @@ import useServices from "../../hooks/useService";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
+// [THAY ĐỔI] Import các biến thể Button
+import Button, {
+  ButtonCreate,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
 function ServiceList() {
@@ -22,25 +27,31 @@ function ServiceList() {
     }
   };
 
-  // Render mỗi row của table (không đổi)
+  // [THAY ĐỔI] Style button nhỏ
+  const tableButtonStyles = "text-sm px-3 py-1";
+
+  // Render mỗi row của table
   const renderRow = (service) => (
     <>
-      <td className="px-4 py-3">{service.SERVICE_ID}</td>
-      <td className="px-4 py-3 font-medium">{service.NAME}</td>
-      <td className="px-4 py-3 text-gray-600">{service.DESCRIPTION || "—"}</td>
-      <td className="px-4 py-3">
+      {/* [FIX] Đổi py-3 -> py-2 cho đồng bộ */}
+      <td className="px-4 py-2">{service.SERVICE_ID}</td>
+      <td className="px-4 py-2 font-medium">{service.NAME}</td>
+      <td className="px-4 py-2 text-gray-600">{service.DESCRIPTION || "—"}</td>
+      <td className="px-4 py-2">
+        {/* [FIX] Bọc nút trong <div> để căn giữa */}
         <div className="flex gap-2">
+          {/* [THAY ĐỔI] Sử dụng ButtonEdit */}
           <Link to={`/services/edit/${service.SERVICE_ID}`}>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1">
-              Sửa
-            </Button>
+            <ButtonEdit className={tableButtonStyles}>Sửa</ButtonEdit>
           </Link>
-          <Button
+
+          {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
+          <ButtonDelete
             onClick={() => setDeleteId(service.SERVICE_ID)}
-            className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
+            className={tableButtonStyles}
           >
             Xóa
-          </Button>
+          </ButtonDelete>
         </div>
       </td>
     </>
@@ -48,31 +59,25 @@ function ServiceList() {
   // --- Hết logic không đổi ---
 
   return (
-    // Bỏ prop 'title' không cần thiết
     <Layout>
-      {/* 1. Đưa Tiêu đề và Nút Thêm Mới ra ngoài Card */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý dịch vụ</h1>
         <Link to="/services/new">
-          {/* Bỏ class màu để dùng Button default (đồng bộ) */}
-          <Button>Thêm dịch vụ</Button>
+          {/* [THAY ĐỔI] Sử dụng ButtonCreate */}
+          <ButtonCreate>Thêm dịch vụ</ButtonCreate>
         </Link>
       </div>
 
-      {/* 2. Card chỉ chứa nội dung (Table hoặc trạng thái) */}
       <Card>
-        {/* Xóa div header bên trong Card */}
-
         {isLoading ? (
-          // 3. Đồng bộ style Loading/Error
           <p className="p-4 text-gray-500">Đang tải dữ liệu...</p>
         ) : error ? (
-          // Đồng bộ style (giữ logic nút "Thử lại" vì hook không cấp refetch)
           <div className="p-4">
             <p className="text-red-500">{error}</p>
+            {/* [THAY ĐỔI] Nút "Thử lại" (màu xám) */}
             <Button
               onClick={() => window.location.reload()}
-              className="mt-4 bg-gray-600 hover:bg-gray-700"
+              className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800"
             >
               Thử lại
             </Button>
@@ -86,12 +91,11 @@ function ServiceList() {
         )}
       </Card>
 
-      {/* Modal giữ nguyên */}
+      {/* Modal giữ nguyên, đã đồng bộ */}
       <ConfirmDeleteModal
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        // Prop 'carName' được giữ nguyên để không phá vỡ logic
         carName={services.find((s) => s.SERVICE_ID === deleteId)?.NAME}
       >
         Bạn có chắc chắn muốn xóa dịch vụ này không? Hành động này không thể

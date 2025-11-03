@@ -4,7 +4,12 @@ import useCategory from "../../hooks/useCategory";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
+// [THAY ĐỔI] Import các biến thể Button
+import Button, {
+  ButtonCreate,
+  ButtonEdit,
+  ButtonDelete,
+} from "../../components/ui/Button";
 import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
 function CategoryList() {
@@ -67,11 +72,14 @@ function CategoryList() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-gray-800">Quản lý danh mục</h1>
           <Link to="/categories/new">
-            <Button className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1">
-              + Thêm danh mục
-            </Button>
+            {/* [THAY ĐỔI] Sử dụng ButtonCreate + className tùy chỉnh kích thước */}
+            <ButtonCreate className="text-sm px-3 py-1">
+              Thêm danh mục
+            </ButtonCreate>
           </Link>
         </div>
+
+        {/* --- Phần hiển thị lỗi (Giữ nguyên logic của bạn) --- */}
         {deleteError && (
           <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             <div className="flex items-start">
@@ -89,7 +97,8 @@ function CategoryList() {
               <div className="flex-1">
                 <strong className="font-bold">Lỗi xóa danh mục: </strong>
                 <span className="block sm:inline">
-                  Không thể xóa danh mục. Vẫn còn xe thuộc danh mục.
+                  {/* [SỬA NHỎ] Hiển thị lỗi động từ state */}
+                  {deleteError}
                 </span>
               </div>
               <button
@@ -111,6 +120,7 @@ function CategoryList() {
             </div>
           </div>
         )}
+
         {/* --- Bảng danh mục --- */}
         <Card>
           {isLoading ? (
@@ -143,18 +153,21 @@ function CategoryList() {
                   </td>
                   <td className="px-4 py-2">
                     <div className="flex gap-2">
+                      {/* [THAY ĐỔI] Sử dụng ButtonEdit */}
                       <Link to={`/categories/edit/${item.CATEGORY_ID}`}>
-                        <Button className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1">
+                        <ButtonEdit className="text-xs px-3 py-1">
                           Sửa
-                        </Button>
+                        </ButtonEdit>
                       </Link>
-                      <Button
-                        className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1"
+
+                      {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
+                      <ButtonDelete
+                        className="text-xs px-3 py-1"
                         onClick={() => handleOpenDelete(item)}
                         disabled={isDeleting}
                       >
                         Xóa
-                      </Button>
+                      </ButtonDelete>
                     </div>
                   </td>
                 </>
@@ -162,13 +175,14 @@ function CategoryList() {
             />
           )}
         </Card>
-        {/* ✅ CHỈ 1 MODAL DUY NHẤT */}
+
+        {/* Modal xác nhận (Giữ nguyên, đã đồng bộ) */}
         <ConfirmDeleteModal
           isOpen={deleteModal.open}
           onClose={handleCloseModal}
           onConfirm={handleConfirmDelete}
           loading={isDeleting}
-          error={null}
+          error={null} // Lỗi được hiển thị bên ngoài
           carName={deleteModal.targetName}
         />
       </div>
