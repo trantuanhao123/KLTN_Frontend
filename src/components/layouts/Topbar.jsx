@@ -5,7 +5,6 @@ import Button from "../../components/ui/Button";
 
 export default function Topbar() {
   const { user, logout } = useAuth();
-  console.log("User object in Topbar:", user);
   return (
     <header className="h-16 flex items-center justify-between px-6 bg-white border-b">
       <div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import carApi from "../api/vehicle";
+import carApi from "../api/car";
 
 export default function useCars() {
   const [cars, setCars] = useState([]);

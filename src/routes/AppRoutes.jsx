@@ -11,11 +11,11 @@ import ResetPassword from "../pages/auth/ResetPassword";
 import Dashboard from "../pages/dashboard/Dashboard";
 
 // ---------- VEHICLES ----------
-import VehicleList from "../pages/vehicles/VehicleList";
-import VehicleForm from "../pages/vehicles/VehicleForm";
-import VehicleUpdateForm from "../pages/vehicles/VehicleUpdateForm";
-import VehicleDetail from "../pages/vehicles/VehicleDetail";
-import VehicleUpdateImage from "../pages/vehicles/VehicleUpdateImage";
+import VehicleList from "../pages/cars/VehicleList";
+import VehicleForm from "../pages/cars/VehicleForm";
+import VehicleUpdateForm from "../pages/cars/VehicleUpdateForm";
+import VehicleDetail from "../pages/cars/VehicleDetail";
+import VehicleUpdateImage from "../pages/cars/VehicleUpdateImage";
 
 // ---------- BOOKINGS ----------
 import BookingList from "../pages/bookings/BookingList";
