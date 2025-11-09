@@ -1,4 +1,3 @@
-// src/pages/incidents/IncidentUpdateForm.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useIncidentDetail } from "../../hooks/useIncident";
@@ -6,9 +5,8 @@ import { useIncidentDetail } from "../../hooks/useIncident";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import MediaViewer from "../../components/ui/MediaViewer"; // Import MediaViewer
+import MediaViewer from "../../components/ui/MediaViewer";
 
-// Map trạng thái Tiếng Việt
 const statusMap = {
   NEW: "Mới",
   IN_PROGRESS: "Đang xử lý",
@@ -16,7 +14,6 @@ const statusMap = {
   CLOSED: "Đã đóng",
 };
 
-// Mảng options cho <select>
 const statusOptions = [
   { value: "NEW", label: "Mới" },
   { value: "IN_PROGRESS", label: "Đang xử lý" },
@@ -24,7 +21,6 @@ const statusOptions = [
   { value: "CLOSED", label: "Đã đóng" },
 ];
 
-// TÁCH RA: Component Form Cập nhật (Cho Cột Phụ)
 const UpdateStatusForm = ({
   currentStatus,
   onSubmit,
@@ -85,50 +81,79 @@ const UpdateStatusForm = ({
   );
 };
 
-// TÁCH RA: Component Thông tin chi tiết (Cho Cột Phụ)
+// [CẬP NHẬT] Hiển thị thông tin chi tiết hơn từ API
 const IncidentInfoCard = ({ incident }) => (
   <Card title="Thông tin chi tiết">
-    <div className="space-y-2 text-sm">
-      <p>
-        <strong>ID Sự cố:</strong> {incident.INCIDENT_ID}
-      </p>
-      <p>
-        <strong>Mã Đơn hàng:</strong> {incident.ORDER_ID}
-      </p>
-      <p>
-        <strong>User ID:</strong> {incident.USER_ID}
-      </p>
-      <p>
-        <strong>Car ID:</strong> {incident.CAR_ID}
-      </p>
-      <p>
-        <strong>Trạng thái hiện tại:</strong>{" "}
-        {statusMap[incident.STATUS] || incident.STATUS}
-      </p>
-      <p>
-        <strong>Ngày tạo:</strong>{" "}
-        {new Date(incident.CREATED_AT).toLocaleString("vi-VN")}
-      </p>
+    <div className="space-y-3 text-sm">
+      <div>
+        <span className="font-semibold text-gray-600">Mã Sự cố:</span>
+        <span className="ml-2">#{incident.INCIDENT_ID}</span>
+      </div>
+
+      <div className="border-t pt-2">
+        <span className="font-semibold text-gray-600 block mb-1">
+          Đơn hàng:
+        </span>
+        <div className="ml-2">
+          <p>
+            Mã:{" "}
+            <span className="font-medium text-600">{incident.order_code}</span>
+          </p>
+          <p className="text-xs text-gray-500">(ID: {incident.ORDER_ID})</p>
+        </div>
+      </div>
+
+      <div className="border-t pt-2">
+        <span className="font-semibold text-gray-600 block mb-1">
+          Khách hàng:
+        </span>
+        <div className="ml-2">
+          <p className="font-medium">{incident.customer_name}</p>
+          <p>SĐT: {incident.customer_phone}</p>
+          {/* <p className="text-xs text-gray-500">(ID: {incident.USER_ID})</p> */}
+        </div>
+      </div>
+
+      <div className="border-t pt-2">
+        <span className="font-semibold text-gray-600 block mb-1">Xe:</span>
+        <div className="ml-2">
+          <p>
+            {incident.car_brand} {incident.car_model}
+          </p>
+          <p className="font-mono bg-gray-100 px-1 rounded inline-block mt-1">
+            {incident.car_license_plate}
+          </p>
+          {/* <p className="text-xs text-gray-500 mt-1">(ID: {incident.CAR_ID})</p> */}
+        </div>
+      </div>
+
+      <div className="border-t pt-2">
+        <span className="font-semibold text-gray-600">Ngày tạo:</span>
+        <span className="ml-2">
+          {new Date(incident.CREATED_AT).toLocaleString("vi-VN")}
+        </span>
+      </div>
+
       {incident.RESOLVED_AT && (
-        <p>
-          <strong>Ngày xử lý:</strong>{" "}
-          {new Date(incident.RESOLVED_AT).toLocaleString("vi-VN")}
-        </p>
+        <div>
+          <span className="font-semibold text-gray-600">Ngày xử lý:</span>
+          <span className="ml-2">
+            {new Date(incident.RESOLVED_AT).toLocaleString("vi-VN")}
+          </span>
+        </div>
       )}
     </div>
   </Card>
 );
 
-// TÁCH RA: Component Mô tả (Cho Cột Phụ)
 const IncidentDescriptionCard = ({ description }) => (
   <Card title="Mô tả sự cố">
-    <p className="p-2 bg-gray-50 rounded border whitespace-pre-wrap text-sm">
+    <p className="p-3 bg-gray-50 rounded border whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
       {description}
     </p>
   </Card>
 );
 
-// COMPONENT CHÍNH (Đã tối ưu bố cục)
 export default function IncidentUpdateForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -168,22 +193,29 @@ export default function IncidentUpdateForm() {
 
   return (
     <Layout>
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">
-        Cập nhật Sự cố #{incident.INCIDENT_ID}
-      </h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Cập nhật Sự cố</h1>
+      </div>
 
-      {/* BỐ CỤC MỚI */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* CỘT CHÍNH (Media) - (col-span-2) */}
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* CỘT CHÍNH (Media & Mô tả) - (col-span-2) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Đưa Mô tả sang cột chính cho rộng rãi */}
+          <IncidentDescriptionCard description={incident.DESCRIPTION} />
+
           <Card title="Media đính kèm">
-            <MediaViewer media={incident.media} />
+            {incident.media && incident.media.length > 0 ? (
+              <MediaViewer media={incident.media} />
+            ) : (
+              <p className="text-gray-500 text-sm italic p-4 text-center bg-gray-50 rounded">
+                Không có media đính kèm.
+              </p>
+            )}
           </Card>
         </div>
 
         {/* CỘT PHỤ (Actions & Info) - (col-span-1) */}
-        <div className="col-span-1 space-y-6">
-          {/* 1. Form Cập nhật (Lên đầu) */}
+        <div className="lg:col-span-1 space-y-6">
           <UpdateStatusForm
             currentStatus={incident.STATUS}
             onSubmit={handleSubmit}
@@ -191,11 +223,7 @@ export default function IncidentUpdateForm() {
             onCancel={() => navigate("/incidents")}
           />
 
-          {/* 2. Thông tin chi tiết */}
           <IncidentInfoCard incident={incident} />
-
-          {/* 3. Mô tả */}
-          <IncidentDescriptionCard description={incident.DESCRIPTION} />
         </div>
       </div>
     </Layout>

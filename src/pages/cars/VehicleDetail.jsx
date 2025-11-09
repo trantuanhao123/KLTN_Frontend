@@ -4,6 +4,8 @@ import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useNavigate, useParams } from "react-router-dom";
 import useCars from "../../hooks/useCar";
+// 🆕 Import icon star (Giả định bạn sử dụng một thư viện icon, ví dụ: lucide-react)
+import { Star } from "lucide-react";
 
 const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
 
@@ -17,6 +19,7 @@ const getStatusClass = (status) => {
     case "RESERVED":
       return "bg-blue-100 text-blue-700"; // Đang giữ chỗ
     case "RENTED":
+    case "IN_PROGRESS": // Thêm IN_PROGRESS nếu có
       return "bg-indigo-100 text-indigo-700"; // Đang thuê
     case "MAINTENANCE":
       return "bg-yellow-100 text-yellow-700"; // Đang bảo trì
@@ -37,6 +40,7 @@ const translateStatus = (status) => {
     case "RESERVED":
       return "Đang được đặt";
     case "RENTED":
+    case "IN_PROGRESS":
       return "Đang thuê";
     case "MAINTENANCE":
       return "Đang bảo trì";
@@ -47,9 +51,29 @@ const translateStatus = (status) => {
   }
 };
 
+/**
+ * Helper để render Rating Star
+ */
+const renderRating = (rating) => {
+  // Chuyển rating về dạng số, làm tròn đến 2 chữ số thập phân
+  const numRating = parseFloat(rating).toFixed(2);
+
+  if (numRating === "0.00") {
+    return <span className="text-gray-500 text-sm">Chưa có đánh giá</span>;
+  }
+
+  // Hiển thị điểm số và icon Star
+  return (
+    <span className="flex items-center text-yellow-500 font-semibold text-xl">
+      {numRating} <Star className="w-5 h-5 ml-1 fill-yellow-500" />
+    </span>
+  );
+};
+
 export default function VehicleDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
+  // 💡 Lấy 'car' từ 'selectedCar' trong hooks, đổi tên thành 'car' cho tiện sử dụng
   const { selectedCar: car, fetchCarById, loading, error } = useCars();
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -58,10 +82,9 @@ export default function VehicleDetail() {
       fetchCarById(id).catch((err) => {
         // Xử lý lỗi nếu fetchCarById bị reject (đã throw trong hook)
         console.error("Lỗi khi tải chi tiết xe:", err);
-        // Error state đã được set trong hook
       });
     }
-  }, [id, fetchCarById]); // Thêm fetchCarById vào dependency array
+  }, [id, fetchCarById]);
 
   if (loading)
     return (
@@ -93,14 +116,18 @@ export default function VehicleDetail() {
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          {car.BRAND} {car.MODEL}
-        </h2>
+        <div>
+          {/* 🌟 HIỂN THỊ RATING NGAY DƯỚI TÊN XE */}
+          <h2 className="text-2xl font-semibold text-gray-800">
+            {car.BRAND} {car.MODEL}
+          </h2>
+        </div>
+
         <Button
           className="bg-gray-500 hover:bg-gray-600 text-white"
           onClick={() => navigate("/vehicles")}
         >
-          ← Quay lại danh sách
+          Quay lại danh sách
         </Button>
       </div>
 
@@ -141,11 +168,15 @@ export default function VehicleDetail() {
                 Thông tin cơ bản
               </h3>
               <div className="grid grid-cols-2 gap-3 text-sm mt-2">
+                {/* 🌟 THÊM RATING VÀO THÔNG TIN CƠ BẢN */}
                 <p>
-                  <strong>Biển số:</strong> {car.LICENSE_PLATE}
+                  <strong>Đánh giá:</strong> {renderRating(car.RATING)}
                 </p>
                 <p>
                   <strong>Loại xe:</strong> {car.CATEGORY_NAME}
+                </p>
+                <p>
+                  <strong>Biển số:</strong> {car.LICENSE_PLATE}
                 </p>
                 <p>
                   <strong>Chi nhánh:</strong> {car.BRANCH_NAME}

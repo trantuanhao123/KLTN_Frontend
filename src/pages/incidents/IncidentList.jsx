@@ -1,4 +1,3 @@
-// src/pages/incidents/IncidentList.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useIncidentsList } from "../../hooks/useIncident";
@@ -69,43 +68,61 @@ export default function IncidentList() {
     }
   };
 
+  // [CẬP NHẬT HEADERS] Thêm các cột mới
   const headers = [
     "ID",
-    "Mã Đơn",
-    "User ID",
-    "Mô tả",
-    "Trạng thái",
-    "Ngày tạo",
+    "Mã Đơn Hàng",
+    "Khách Hàng",
+    "Xe",
+    "Biển Số",
+    "Trạng Thái",
+    "Ngày Tạo",
     "Hành động",
   ];
 
   const selectedIncidentIdentifier = `Sự cố #${selectedIncidentId}`;
-
-  // [THAY ĐỔI] Style cho button nhỏ trong bảng
   const tableButtonStyles = "text-sm px-3 py-1";
 
+  // [CẬP NHẬT RENDER ROW] Hiển thị dữ liệu chi tiết
   const renderRow = (item) => (
     <>
-      <td className="px-4 py-2 ">{item.INCIDENT_ID}</td>
-      <td className="px-4 py-2 font-medium">{item.ORDER_ID}</td>
-      <td className="px-4 py-2 ">{item.USER_ID}</td>
-      <td className="px-4 py-2 max-w-xs truncate">{item.DESCRIPTION}</td>
-      <td className="px-4 py-2">{getStatusBadge(item.STATUS)}</td>
+      <td className="px-4 py-2 text-sm text-gray-500">{item.INCIDENT_ID}</td>
+
+      {/* Mã Đơn Hàng */}
+      <td className="px-4 py-2 font-medium text-600">
+        {item.order_code || item.ORDER_ID}
+      </td>
+
+      {/* Khách Hàng */}
       <td className="px-4 py-2">
+        <div className="text-sm font-medium text-900">{item.customer_name}</div>
+      </td>
+
+      {/* Xe */}
+      <td className="px-4 py-2 text-sm">
+        {item.car_brand} {item.car_model}
+      </td>
+
+      {/* Biển Số */}
+      <td className="px-4 py-2 font-mono text-sm">{item.car_license_plate}</td>
+
+      {/* Trạng Thái */}
+      <td className="px-4 py-2">{getStatusBadge(item.STATUS)}</td>
+
+      {/* Ngày Tạo */}
+      <td className="px-4 py-2 text-sm text-gray-500">
         {new Date(item.CREATED_AT).toLocaleString("vi-VN")}
       </td>
 
-      {/* [THAY ĐỔI] Bọc button trong 1 div để căn giữa */}
+      {/* Hành Động */}
       <td className="px-4 py-2">
         <div className="flex gap-2">
-          {/* [THAY ĐỔI] Sử dụng ButtonRead */}
           <Link to={`/incidents/edit/${item.INCIDENT_ID}`}>
             <ButtonRead className={tableButtonStyles}>
               Chi Tiết Và Xử Lý
             </ButtonRead>
           </Link>
 
-          {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
           <ButtonDelete
             className={tableButtonStyles}
             onClick={() => handleDeleteClick(item.INCIDENT_ID)}
@@ -133,7 +150,6 @@ export default function IncidentList() {
         )}
       </Card>
 
-      {/* Modal này đã được đồng bộ từ trước */}
       <ConfirmDeleteModal
         isOpen={showModal}
         onClose={handleCancelDelete}
