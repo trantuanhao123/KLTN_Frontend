@@ -1,17 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Button, { ButtonEdit, ButtonCreate } from "../../components/ui/Button"; // [THÊM] ButtonEdit, ButtonCreate
+import Button, { ButtonEdit, ButtonCreate } from "../../components/ui/Button";
 import useAdminUsers from "../../hooks/useCustomer";
 import Layout from "../../components/layouts/Layout";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+
+const buildImageUrl = (filename) => {
+  if (!filename) return null;
+  if (filename.startsWith("http://") || filename.startsWith("https://")) {
+    return filename;
+  }
+  return `${BACKEND_URL}/images/${filename}`;
+};
+
+const ImageZoomModal = ({ imageUrl, onClose }) => {
+  if (!imageUrl) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-w-4xl max-h-[90vh] p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="absolute top-0 right-0 m-2 text-white text-3xl font-bold p-2 hover:text-gray-300"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+        <img
+          src={imageUrl}
+          alt="Zoomed Image"
+          className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+        />
+      </div>
+    </div>
+  );
+};
 
 export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchUserById, verifyUser, unverifyUser, loading } = useAdminUsers(); // [SỬA ĐỔI] Thêm unverifyUser
+  const { fetchUserById, verifyUser, unverifyUser, loading } = useAdminUsers();
   const [user, setUser] = useState(null);
   const [verifying, setVerifying] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
-  // Lấy chi tiết user khi mở trang
   useEffect(() => {
     async function loadUser() {
       const data = await fetchUserById(id);
@@ -20,7 +58,6 @@ export default function CustomerDetail() {
     loadUser();
   }, [id, fetchUserById]);
 
-  // Hàm xác minh người dùng (KYC/Bằng lái)
   const handleVerify = async () => {
     if (!user) return;
     setVerifying(true);
@@ -36,7 +73,6 @@ export default function CustomerDetail() {
     }
   };
 
-  // [THÊM MỚI] Hàm hủy xác minh người dùng
   const handleUnverify = async () => {
     if (!user) return;
     setVerifying(true);
@@ -52,7 +88,14 @@ export default function CustomerDetail() {
     }
   };
 
-  // Tạo hàm xử lý đóng
+  const handleZoomImage = (imageUrl) => {
+    setZoomedImage(imageUrl);
+  };
+
+  const handleCloseZoom = () => {
+    setZoomedImage(null);
+  };
+
   const handleClose = () => {
     navigate("/customers");
   };
@@ -85,17 +128,28 @@ export default function CustomerDetail() {
     IS_EMAIL_VERIFIED,
   } = user;
 
+  const avatarSrc = AVATAR_URL
+    ? buildImageUrl(AVATAR_URL)
+    : `${BACKEND_URL}/images/default-avatar.png`;
+  const licenseFrontSrc = LICENSE_FRONT_URL
+    ? buildImageUrl(LICENSE_FRONT_URL)
+    : null;
+  const licenseBackSrc = LICENSE_BACK_URL
+    ? buildImageUrl(LICENSE_BACK_URL)
+    : null;
+
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Avatar + tên */}
         <div className="flex items-center gap-4">
           <img
-            src={
-              AVATAR_URL || "http://localhost:8080/images/default-avatar.png"
-            }
+            src={avatarSrc}
             alt="avatar"
             className="w-20 h-20 rounded-full border object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `${BACKEND_URL}/images/default-avatar.png`;
+            }}
           />
           <div>
             <h3 className="text-xl font-semibold text-gray-800">
@@ -128,8 +182,6 @@ export default function CustomerDetail() {
             </p>
           </div>
         </div>
-
-        {/* Thông tin liên hệ */}
         <section className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
           <p>
             <strong>Email:</strong> {EMAIL || "—"}
@@ -155,20 +207,18 @@ export default function CustomerDetail() {
             </p>
           )}
           <p>
-            <strong>Điểm đánh giá:</strong>{" "}
+            <strong>Điểm đánh giá:</strong>
             {Number(RATING) ? Number(RATING).toFixed(2) : "0.00"}
           </p>
           <p>
-            <strong>Tạo lúc:</strong>{" "}
+            <strong>Tạo lúc:</strong>
             {new Date(CREATED_AT).toLocaleString("vi-VN")}
           </p>
           <p>
-            <strong>Cập nhật:</strong>{" "}
+            <strong>Cập nhật:</strong>
             {new Date(UPDATED_AT).toLocaleString("vi-VN")}
           </p>
         </section>
-
-        {/* Bằng lái xe */}
         <div>
           <h4 className="text-sm font-semibold text-gray-700 mb-2">
             Ảnh bằng lái xe
@@ -178,55 +228,74 @@ export default function CustomerDetail() {
               <p className="text-xs text-gray-600 mb-1 font-medium">
                 Mặt trước
               </p>
-              {LICENSE_FRONT_URL ? (
+              {licenseFrontSrc ? (
                 <img
-                  src={LICENSE_FRONT_URL}
+                  src={licenseFrontSrc}
                   alt="Mặt trước bằng lái"
-                  className="w-full rounded-md border object-cover max-h-56"
+                  className="w-full rounded-md border object-cover max-h-56 cursor-pointer hover:opacity-75 transition"
+                  onClick={() => handleZoomImage(licenseFrontSrc)}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextElementSibling.style.display = "block";
+                  }}
                 />
-              ) : (
+              ) : null}
+              {!licenseFrontSrc && (
                 <p className="text-gray-400 text-center py-8 text-sm">
                   Chưa có hình mặt trước
                 </p>
               )}
+              <p
+                className="text-gray-400 text-center py-8 text-sm"
+                style={{ display: "none" }}
+              >
+                Không thể tải hình mặt trước
+              </p>
             </div>
-
             <div className="border rounded-lg p-2 bg-gray-50">
               <p className="text-xs text-gray-600 mb-1 font-medium">Mặt sau</p>
-              {LICENSE_BACK_URL ? (
+              {licenseBackSrc ? (
                 <img
-                  src={LICENSE_BACK_URL}
+                  src={licenseBackSrc}
                   alt="Mặt sau bằng lái"
-                  className="w-full rounded-md border object-cover max-h-56"
+                  className="w-full rounded-md border object-cover max-h-56 cursor-pointer hover:opacity-75 transition"
+                  onClick={() => handleZoomImage(licenseBackSrc)}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextElementSibling.style.display = "block";
+                  }}
                 />
-              ) : (
+              ) : null}
+              {!licenseBackSrc && (
                 <p className="text-gray-400 text-center py-8 text-sm">
                   Chưa có hình mặt sau
                 </p>
               )}
+              <p
+                className="text-gray-400 text-center py-8 text-sm"
+                style={{ display: "none" }}
+              >
+                Không thể tải hình mặt sau
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Hành động */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
           {VERIFIED ? (
-            // [THÊM MỚI] Nút Hủy xác minh (Màu vàng - ButtonEdit)
             <ButtonEdit onClick={handleUnverify} disabled={verifying}>
               {verifying ? "Đang hủy xác minh..." : "Hủy xác minh người dùng"}
             </ButtonEdit>
           ) : (
-            // Nút Xác minh (Màu xanh lá - ButtonCreate)
             <ButtonCreate onClick={handleVerify} disabled={verifying}>
               {verifying ? "Đang xác minh..." : "Xác minh người dùng (KYC)"}
             </ButtonCreate>
           )}
-
           <Button className="bg-gray-400" onClick={handleClose}>
             Đóng
           </Button>
         </div>
       </div>
+      <ImageZoomModal imageUrl={zoomedImage} onClose={handleCloseZoom} />
     </Layout>
   );
 }
