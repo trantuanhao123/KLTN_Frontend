@@ -10,7 +10,7 @@ export default function useAdminUsers() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 🟡 Lấy danh sách user
+  // Lấy danh sách user
   const fetchAllUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -22,12 +22,12 @@ export default function useAdminUsers() {
       setLoading(false);
     }
   }, []);
-  // 🟣 Lấy chi tiết user theo ID
+  // Lấy chi tiết user theo ID
   const fetchUserById = useCallback(async (id) => {
     try {
       setLoading(true);
       const res = await adminUserApi.getById(id);
-      return res.data; // ⚠️ chỉ return, không setUsers
+      return res.data; // chỉ return, không setUsers
     } catch (err) {
       setError(err.response?.data?.error || "Không tải được thông tin user");
       return null;
@@ -35,7 +35,7 @@ export default function useAdminUsers() {
       setLoading(false);
     }
   }, []);
-  // 🟣 Cập nhật thông tin user
+  // Cập nhật thông tin user
   const updateUser = useCallback(
     async (id, data) => {
       const res = await adminUserApi.update(id, data);
@@ -45,16 +45,25 @@ export default function useAdminUsers() {
     [fetchAllUsers]
   );
 
-  // 🔴 Xóa user
+  // Xóa user
   const deleteUser = useCallback(async (id) => {
     await adminUserApi.delete(id);
     setUsers((prev) => prev.filter((u) => u.USER_ID !== id));
   }, []);
 
-  // ✅ Xác minh user
+  // Xác minh user
   const verifyUser = useCallback(
     async (id) => {
       await adminUserApi.verify(id);
+      await fetchAllUsers();
+    },
+    [fetchAllUsers]
+  );
+
+  // Hủy xác minh user
+  const unverifyUser = useCallback(
+    async (id) => {
+      await adminUserApi.unverify(id);
       await fetchAllUsers();
     },
     [fetchAllUsers]
@@ -67,6 +76,7 @@ export default function useAdminUsers() {
     },
     [fetchAllUsers]
   );
+
   useEffect(() => {
     if (admin?.token) fetchAllUsers();
   }, [admin, fetchAllUsers]);
@@ -81,6 +91,7 @@ export default function useAdminUsers() {
     updateUser,
     deleteUser,
     verifyUser,
+    unverifyUser,
     reactivateUser,
   };
 }

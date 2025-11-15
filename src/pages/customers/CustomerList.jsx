@@ -1,10 +1,8 @@
-// ✅ Import useEffect
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
-// [THAY ĐỔI] Import các biến thể Button
 import Button, {
   ButtonCreate,
   ButtonRead,
@@ -20,46 +18,49 @@ export default function CustomerList() {
     loading,
     error,
     verifyUser,
+    unverifyUser,
     deleteUser,
     reactivateUser,
     fetchAllUsers,
   } = useAdminUsers();
 
-  // 🧩 Bộ lọc: all / active / deleted
+  // Bộ lọc: all / active / deleted
   const [filterStatus, setFilterStatus] = useState("all");
 
-  // 🧩 Modal control
+  // Modal control
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalAction, setModalAction] = useState(null); // "verify" | "ban" | "restore"
+  const [modalAction, setModalAction] = useState(null); // "verify" | "unverify" | "ban" | "restore" | "unverify"
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // ✅ Tự động tải dữ liệu khi component được gắn (mount)
+  // Tự động tải dữ liệu khi component được gắn (mount)
   useEffect(() => {
     fetchAllUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // [] đảm bảo effect này chỉ chạy 1 lần khi component mount
+  }, []);
 
-  // 🔎 Lọc user theo dropdown
+  // Lọc user theo dropdown
   const filteredUsers = users.filter((u) => {
     if (filterStatus === "active") return u.IS_DELETED === 0;
     if (filterStatus === "deleted") return u.IS_DELETED === 1;
     return true; // "all"
   });
 
-  // ⚙️ Mở modal
+  // Mở modal
   const openModal = (action, user) => {
     setModalAction(action);
     setSelectedUser(user);
     setModalOpen(true);
   };
 
-  // ⚙️ Xác nhận hành động trong modal
+  // Xác nhận hành động trong modal
   const handleConfirmAction = async () => {
     if (!selectedUser || !modalAction) return;
 
     switch (modalAction) {
       case "verify":
         await verifyUser(selectedUser.USER_ID);
+        break;
+      case "unverify":
+        await unverifyUser(selectedUser.USER_ID);
         break;
       case "ban":
         await deleteUser(selectedUser.USER_ID);
@@ -75,13 +76,12 @@ export default function CustomerList() {
     setModalOpen(false);
   };
 
-  // [THAY ĐỔI] Thêm className cho button nhỏ trong bảng
   const tableButtonStyles = "text-sm px-3 py-1";
 
   return (
     <Layout>
       <div className="space-y-4">
-        {/* 🧭 Header */}
+        {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">
             Quản lý khách hàng
@@ -99,10 +99,10 @@ export default function CustomerList() {
           </div>
         </div>
 
-        {/* 🧨 Hiển thị lỗi */}
+        {/* Hiển thị lỗi */}
         {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
 
-        {/* 🧾 Bảng danh sách */}
+        {/* Bảng danh sách */}
         <Card>
           {loading && users.length === 0 ? (
             <p className="p-4 text-center text-gray-500">Đang tải dữ liệu...</p>
@@ -141,7 +141,7 @@ export default function CustomerList() {
                     )}
                   </td>
 
-                  {/* [THAY ĐỔI] Cột Thao tác */}
+                  {/* Cột Thao tác */}
                   <td className="px-4 py-2">
                     <div className="flex gap-2">
                       {u.IS_DELETED ? (
@@ -170,8 +170,17 @@ export default function CustomerList() {
                             </Button>
                           </Link>
 
-                          {/* Dùng ButtonCreate (màu xanh lá) */}
-                          {!u.VERIFIED && (
+                          {/* Nút Xác minh/Hủy xác minh */}
+                          {u.VERIFIED ? (
+                            // Hiện nút Hủy xác minh (màu vàng - ButtonEdit)
+                            <ButtonEdit
+                              className={tableButtonStyles}
+                              onClick={() => openModal("unverify", u)}
+                            >
+                              Hủy xác minh
+                            </ButtonEdit>
+                          ) : (
+                            // Hiện nút Xác minh (màu xanh lá - ButtonCreate)
                             <ButtonCreate
                               className={tableButtonStyles}
                               onClick={() => openModal("verify", u)}
@@ -198,7 +207,7 @@ export default function CustomerList() {
         </Card>
       </div>
 
-      {/* 🧱 Modal xác nhận hành động */}
+      {/* Modal xác nhận hành động */}
       <Modal
         open={modalOpen}
         title="Xác nhận hành động"
@@ -209,6 +218,8 @@ export default function CustomerList() {
             <p className="text-gray-700 mb-4">
               {modalAction === "verify" &&
                 `Bạn có chắc muốn xác minh tài khoản "${selectedUser.EMAIL}"?`}
+              {modalAction === "unverify" && // [THÊM MỚI] Modal Hủy xác minh
+                `Bạn có chắc muốn HỦY xác minh tài khoản "${selectedUser.EMAIL}"?`}
               {modalAction === "ban" &&
                 `Bạn có chắc muốn cấm tài khoản "${selectedUser.EMAIL}"?`}
               {modalAction === "restore" &&
@@ -216,7 +227,7 @@ export default function CustomerList() {
             </p>
 
             <div className="flex justify-end gap-3">
-              {/* [THAY ĐỔI] Nút Hủy (màu xám) */}
+              {/* Nút Hủy (màu xám) */}
               <Button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800"
                 onClick={() => setModalOpen(false)}
@@ -224,7 +235,7 @@ export default function CustomerList() {
                 Hủy
               </Button>
 
-              {/* [THAY ĐỔI] Dùng các variant button thay vì className động */}
+              {/* Các variant button */}
               {modalAction === "ban" && (
                 <ButtonDelete onClick={handleConfirmAction}>
                   Xác nhận Cấm
@@ -232,8 +243,13 @@ export default function CustomerList() {
               )}
               {modalAction === "verify" && (
                 <ButtonCreate onClick={handleConfirmAction}>
-                  Xác nhận
+                  Xác nhận Xác minh
                 </ButtonCreate>
+              )}
+              {modalAction === "unverify" && ( // [THÊM MỚI] Nút Xác nhận Hủy xác minh
+                <ButtonEdit onClick={handleConfirmAction}>
+                  Xác nhận Hủy xác minh
+                </ButtonEdit>
               )}
               {modalAction === "restore" && (
                 <ButtonEdit onClick={handleConfirmAction}>

@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // 👈 1. Import useNavigate
-import Button from "../../components/ui/Button";
+import { useParams, useNavigate } from "react-router-dom";
+import Button, { ButtonEdit, ButtonCreate } from "../../components/ui/Button"; // [THÊM] ButtonEdit, ButtonCreate
 import useAdminUsers from "../../hooks/useCustomer";
 import Layout from "../../components/layouts/Layout";
 
 export default function CustomerDetail() {
-  // 👈 2. Xóa prop 'onClose'
   const { id } = useParams();
-  const navigate = useNavigate(); // 👈 3. Khởi tạo navigate
-  const { fetchUserById, verifyUser, loading } = useAdminUsers();
+  const navigate = useNavigate();
+  const { fetchUserById, verifyUser, unverifyUser, loading } = useAdminUsers(); // [SỬA ĐỔI] Thêm unverifyUser
   const [user, setUser] = useState(null);
   const [verifying, setVerifying] = useState(false);
 
-  // 🟡 Lấy chi tiết user khi mở trang
+  // Lấy chi tiết user khi mở trang
   useEffect(() => {
     async function loadUser() {
       const data = await fetchUserById(id);
@@ -21,7 +20,7 @@ export default function CustomerDetail() {
     loadUser();
   }, [id, fetchUserById]);
 
-  // 🟢 Hàm xác minh người dùng (KYC/Bằng lái)
+  // Hàm xác minh người dùng (KYC/Bằng lái)
   const handleVerify = async () => {
     if (!user) return;
     setVerifying(true);
@@ -29,15 +28,31 @@ export default function CustomerDetail() {
       await verifyUser(user.USER_ID);
       const updated = await fetchUserById(user.USER_ID);
       setUser(updated);
-      alert("✅ Người dùng đã được xác minh thành công!");
+      alert("Người dùng đã được xác minh thành công!");
     } catch (err) {
-      alert("❌ Lỗi xác minh người dùng!");
+      alert("Lỗi xác minh người dùng!");
     } finally {
       setVerifying(false);
     }
   };
 
-  // 👈 4. Tạo hàm xử lý đóng
+  // [THÊM MỚI] Hàm hủy xác minh người dùng
+  const handleUnverify = async () => {
+    if (!user) return;
+    setVerifying(true);
+    try {
+      await unverifyUser(user.USER_ID);
+      const updated = await fetchUserById(user.USER_ID);
+      setUser(updated);
+      alert("Đã hủy xác minh người dùng thành công!");
+    } catch (err) {
+      alert("Lỗi hủy xác minh người dùng!");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  // Tạo hàm xử lý đóng
   const handleClose = () => {
     navigate("/customers");
   };
@@ -140,7 +155,7 @@ export default function CustomerDetail() {
             </p>
           )}
           <p>
-            <strong>Điểm đánh giá:</strong> ⭐{" "}
+            <strong>Điểm đánh giá:</strong>{" "}
             {Number(RATING) ? Number(RATING).toFixed(2) : "0.00"}
           </p>
           <p>
@@ -195,16 +210,18 @@ export default function CustomerDetail() {
 
         {/* Hành động */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          {!VERIFIED && (
-            <Button
-              className="bg-green-600"
-              onClick={handleVerify}
-              disabled={verifying}
-            >
+          {VERIFIED ? (
+            // [THÊM MỚI] Nút Hủy xác minh (Màu vàng - ButtonEdit)
+            <ButtonEdit onClick={handleUnverify} disabled={verifying}>
+              {verifying ? "Đang hủy xác minh..." : "Hủy xác minh người dùng"}
+            </ButtonEdit>
+          ) : (
+            // Nút Xác minh (Màu xanh lá - ButtonCreate)
+            <ButtonCreate onClick={handleVerify} disabled={verifying}>
               {verifying ? "Đang xác minh..." : "Xác minh người dùng (KYC)"}
-            </Button>
+            </ButtonCreate>
           )}
-          {/* 👈 5. Thay đổi onClick thành handleClose */}
+
           <Button className="bg-gray-400" onClick={handleClose}>
             Đóng
           </Button>
