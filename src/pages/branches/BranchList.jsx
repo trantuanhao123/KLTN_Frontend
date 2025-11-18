@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import useBranches from "../../hooks/useBranch";
 import Table from "../../components/ui/Table";
 import Card from "../../components/ui/Card";
-// [THAY ĐỔI] Import các biến thể Button
 import Button, {
   ButtonCreate,
   ButtonRead,
@@ -14,7 +13,6 @@ import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 import Layout from "../../components/layouts/Layout";
 
 export default function BranchList() {
-  // --- Logic không đổi ---
   const { branches, isLoading, error, fetchBranches, removeBranch } =
     useBranches();
 
@@ -42,7 +40,6 @@ export default function BranchList() {
     setSelectedBranchId(null);
     setShowModal(false);
   };
-  // --- Hết logic không đổi ---
 
   const selectedBranchName =
     branches.find((b) => b.BRANCH_ID === selectedBranchId)?.NAME || "";
@@ -52,7 +49,6 @@ export default function BranchList() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý chi nhánh</h1>
         <Link to="/branches/new">
-          {/* [THAY ĐỔI] Sử dụng ButtonCreate */}
           <ButtonCreate>Thêm chi nhánh</ButtonCreate>
         </Link>
       </div>
@@ -69,6 +65,7 @@ export default function BranchList() {
               "Tên chi nhánh",
               "Địa chỉ",
               "Số điện thoại",
+              "Số lượng xe",
               "Hành động",
             ]}
             data={branches}
@@ -78,23 +75,21 @@ export default function BranchList() {
                 <td className="px-4 py-2 font-medium">{branch.NAME}</td>
                 <td className="px-4 py-2">{branch.ADDRESS}</td>
                 <td className="px-4 py-2">{branch.PHONE}</td>
-
-                {/* [THAY ĐỔI] Bọc các button trong 1 div để căn giữa */}
+                <td className="px-4 py-2 text-center font-semibold text-blue-600">
+                  {branch.car_count}
+                </td>
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
-                    {/* [THAY ĐỔI] Sử dụng ButtonRead */}
                     <Link to={`/branches/detail/${branch.BRANCH_ID}`}>
                       <ButtonRead className="px-3 py-1 text-sm">
                         Chi Tiết
                       </ButtonRead>
                     </Link>
 
-                    {/* [THAY ĐỔI] Sử dụng ButtonEdit (fix màu từ xanh -> vàng) */}
                     <Link to={`/branches/edit/${branch.BRANCH_ID}`}>
                       <ButtonEdit className="px-3 py-1 text-sm">Sửa</ButtonEdit>
                     </Link>
 
-                    {/* [THAY ĐỔI] Sử dụng ButtonDelete */}
                     <ButtonDelete
                       className="px-3 py-1 text-sm"
                       onClick={() => handleDeleteClick(branch.BRANCH_ID)}
@@ -109,12 +104,11 @@ export default function BranchList() {
         )}
       </Card>
 
-      {/* Modal này đã được đồng bộ từ trước */}
       <ConfirmDeleteModal
         isOpen={showModal}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        carName={selectedBranchName} // Prop này dùng chung cho tên
+        carName={selectedBranchName}
       >
         Bạn có chắc chắn muốn xóa chi nhánh
         <strong> {selectedBranchName} </strong>
