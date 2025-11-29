@@ -7,7 +7,7 @@ import useCars from "../../hooks/useCar";
 // 🆕 Import icon star (Giả định bạn sử dụng một thư viện icon, ví dụ: lucide-react)
 import { Star } from "lucide-react";
 
-const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 /**
  * Helper để tạo màu cho status

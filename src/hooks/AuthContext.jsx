@@ -2,15 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authApi from "../api/auth.js"; // API helper
 
-// HÀM HELPER: Thêm hàm này vào đầu file AuthContext.jsx
-/**
- * Giải mã phần payload của JWT mà không cần thư viện
- * @param {string} token
- * @returns {object | null}
- */
 function parseJwtPayload(token) {
   try {
-    const base64Url = token.split(".")[1]; // Lấy phần payload
+    const base64Url = token.split(".")[1];
     if (!base64Url) return null;
 
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -58,21 +52,16 @@ export function AuthProvider({ children }) {
       const dataToProcess = apiResponse.data || apiResponse;
 
       if (dataToProcess && dataToProcess.user && dataToProcess.token) {
-        // --- [SỬA ĐỔI BẮT ĐẦU] ---
         const token = dataToProcess.token;
         const payload = parseJwtPayload(token);
-
-        // Lấy 'exp' (là giây) và chuyển thành mili-giây
-        // Thêm 60 giây dự phòng cho đồng bộ thời gian
         const expiresAt =
           payload && payload.exp ? payload.exp * 1000 - 60000 : null;
 
         loggedInUser = {
           ...dataToProcess.user,
           token: token,
-          expiresAt: expiresAt, // <-- LƯU THỜI GIAN HẾT HẠN
+          expiresAt: expiresAt,
         };
-        // --- [SỬA ĐỔI KẾT THÚC] ---
 
         setUser(loggedInUser);
         success = true;

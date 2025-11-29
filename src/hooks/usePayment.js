@@ -20,10 +20,9 @@ export const useAdminGetPendingRefunds = () => {
         ? response.data
         : response.data?.data || [];
 
-      console.log("✅ Refunds data:", refunds);
       setData(refunds);
     } catch (err) {
-      console.error("❌ Error fetching refunds:", err);
+      console.error("Error fetching refunds:", err);
       console.error("Error details:", err.response?.data || err.message);
       setError(err);
       setData([]);
@@ -55,13 +54,13 @@ export const useAdminConfirmRefund = () => {
     setData(null);
     try {
       const response = await paymentApi.adminConfirmRefund(paymentId);
-      console.log("✅ Confirm refund response:", response);
+      console.log("Confirm refund response:", response);
 
       const result = response.data?.data || response.data;
       setData(result);
       return result;
     } catch (err) {
-      console.error("❌ Error confirming refund:", err);
+      console.error("Error confirming refund:", err);
       console.error("Error details:", err.response?.data || err.message);
       setError(err);
       throw err;

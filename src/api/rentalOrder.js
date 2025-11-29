@@ -1,8 +1,5 @@
 import axiosClient from "./axiosClient";
 
-// Lưu ý: Chúng ta không dùng chung API_PREFIX nữa
-// vì các route của bạn không đồng nhất
-
 // 1. Lấy tất cả đơn hàng
 // GET /api/orders/
 export const adminGetAllOrders = () => {

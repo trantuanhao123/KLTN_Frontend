@@ -14,7 +14,7 @@ export const useDashboardStats = () => {
       try {
         const [dashboardRes, carsRes] = await Promise.all([
           dashboardApi.getFullDashboard(),
-          carApi.getAvailableCars(), // Dòng này bây giờ sẽ hoạt động
+          carApi.getAvailableCars(),
         ]);
 
         setData({

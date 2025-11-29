@@ -9,7 +9,7 @@ import CustomBarChart from "../../components/charts/BarChart";
 import { useReports } from "../../hooks/useReport"; // Đảm bảo đường dẫn hook chính xác
 import { formatCurrency } from "../../utils/formatters";
 
-const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 const BASE_IMAGE_URL = `${BACKEND_URL}/images/`;
 

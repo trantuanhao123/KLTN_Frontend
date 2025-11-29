@@ -1,4 +1,3 @@
-// src/components/ui/MediaViewer.jsx
 import React from "react";
 
 // Lấy Base URL của Backend từ biến môi trường

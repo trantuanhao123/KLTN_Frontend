@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import useCars from "../../hooks/useCar";
 import ConfirmDeleteModal from "../../components/ui/ConfirmDeleteModal";
 
-const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 // ... (Giữ nguyên các hàm getStatusClass và translateStatus) ...
 const getStatusClass = (status) => {

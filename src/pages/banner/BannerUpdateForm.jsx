@@ -5,7 +5,7 @@ import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import bannerApi from "../../api/banner";
 
-const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 export default function BannerUpdateForm() {
   const { id } = useParams();

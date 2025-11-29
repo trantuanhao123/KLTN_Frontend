@@ -4,16 +4,17 @@ import Layout from "../../components/layouts/Layout";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import useCars from "../../hooks/useCar";
-import useCarImage from "../../hooks/useCarImage"; // 👈 1. Import hook quản lý ảnh
+import useCarImage from "../../hooks/useCarImage";
+
+// Khai báo biến môi trường cho URL backend
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 export default function VehicleUpdateImage() {
   const { id } = useParams();
   const carId = id;
 
-  // 🔹 Hook để lấy thông tin chung của xe (tên, biển số...)
   const { fetchCarById, selectedCar, loading: carLoading } = useCars();
 
-  // 🔹 Hook để quản lý hình ảnh (lấy danh sách, thêm, xóa, preview...)
   const {
     images,
     previewUrls,
@@ -22,19 +23,16 @@ export default function VehicleUpdateImage() {
     handleFileSelect,
     addImages,
     deleteImage,
-    fetchImages, // Lấy hàm fetchImages để làm mới khi cần
+    fetchImages,
   } = useCarImage(carId);
 
-  // 🔹 State này chỉ thuộc về component để quản lý UI chọn ảnh nào để xóa
   const [selectedForDelete, setSelectedForDelete] = useState([]);
   const [message, setMessage] = useState("");
 
-  // 🔹 Lấy thông tin xe ban đầu
   useEffect(() => {
     if (carId) fetchCarById(carId);
   }, [carId, fetchCarById]);
 
-  // 🔹 Hàm xử lý chọn/bỏ chọn ảnh để xóa
   const toggleSelectDelete = (imageId) => {
     setSelectedForDelete((prev) =>
       prev.includes(imageId)
@@ -43,30 +41,30 @@ export default function VehicleUpdateImage() {
     );
   };
 
-  // 🔹 TH1: Chỉ thêm ảnh mới
+  // TH1: Chỉ thêm ảnh mới
   const handleUploadImages = async () => {
-    await addImages(); // Logic đã có sẵn trong hook
-    setMessage("✅ Tải hình mới thành công!");
-    await fetchImages(); // Làm mới lại danh sách ảnh
+    await addImages();
+    setMessage("Tải hình mới thành công!");
+    await fetchImages();
   };
 
-  // 🔹 TH2: Chỉ xóa ảnh cũ
+  // TH2: Chỉ xóa ảnh cũ
   const handleDeleteImages = async () => {
     if (!selectedForDelete.length) {
-      setMessage("⚠️ Vui lòng chọn ít nhất một hình để xóa!");
+      setMessage("Vui lòng chọn ít nhất một hình để xóa!");
       return;
     }
     try {
-      // Thực hiện xóa song song để tăng hiệu suất
       await Promise.all(selectedForDelete.map((id) => deleteImage(id)));
-      setMessage("✅ Xóa hình thành công!");
+      setMessage("Xóa hình thành công!");
       setSelectedForDelete([]);
+      await fetchImages();
     } catch (err) {
-      setMessage(`❌ Có lỗi khi xóa hình: ${err.message}`);
+      setMessage(`Có lỗi khi xóa hình: ${err.message}`);
     }
   };
 
-  // 🔹 TH3: Xóa cũ + Thêm mới
+  // TH3: Xóa cũ + Thêm mới
   const handleDeleteAndUpload = async () => {
     setMessage("Đang xử lý...");
     try {
@@ -81,10 +79,10 @@ export default function VehicleUpdateImage() {
         await addImages();
       }
 
-      setMessage("✅ Cập nhật hình ảnh thành công!");
-      await fetchImages(); // Tải lại danh sách ảnh cuối cùng
+      setMessage("Cập nhật hình ảnh thành công!");
+      await fetchImages();
     } catch (err) {
-      setMessage(`❌ Có lỗi trong quá trình thao tác: ${err.message}`);
+      setMessage(`Có lỗi trong quá trình thao tác: ${err.message}`);
     }
   };
 
@@ -100,7 +98,6 @@ export default function VehicleUpdateImage() {
             <p className="text-gray-500">Không tìm thấy thông tin xe.</p>
           ) : (
             <div className="space-y-6">
-              {/* 🟢 Thông tin xe */}
               <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                 <h3 className="text-base font-semibold text-gray-800 mb-2">
                   {selectedCar.BRAND} {selectedCar.MODEL}
@@ -109,8 +106,6 @@ export default function VehicleUpdateImage() {
                   Biển số: <b>{selectedCar.LICENSE_PLATE}</b>
                 </p>
               </div>
-
-              {/* 🟢 Danh sách hình cũ (lấy từ useCarImage) */}
               {images && images.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
@@ -128,7 +123,8 @@ export default function VehicleUpdateImage() {
                         onClick={() => toggleSelectDelete(img.IMAGE_ID)}
                       >
                         <img
-                          src={`http://localhost:8080/images/${img.URL}`}
+                          // SỬ DỤNG BACKEND_URL Ở ĐÂY
+                          src={`${BACKEND_URL}/images/${img.URL}`}
                           alt={img.URL}
                           className="w-full h-40 object-cover cursor-pointer"
                         />
@@ -147,8 +143,6 @@ export default function VehicleUpdateImage() {
                   </div>
                 </div>
               )}
-
-              {/* 🟢 Chọn hình mới */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Thêm hình mới
@@ -157,13 +151,10 @@ export default function VehicleUpdateImage() {
                   type="file"
                   accept="image/*"
                   multiple
-                  // 👈 2. Sử dụng handler từ hook
                   onChange={(e) => handleFileSelect(e.target.files)}
                   className="block w-full text-sm text-gray-600 border border-gray-300 rounded-md p-2"
                 />
               </div>
-
-              {/* 🟢 Preview hình mới (lấy từ useCarImage) */}
               {previewUrls.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
@@ -185,8 +176,6 @@ export default function VehicleUpdateImage() {
                   </div>
                 </div>
               )}
-
-              {/* 🟢 Nút thao tác (gọi các hàm đã được đơn giản hóa) */}
               <div className="flex flex-wrap gap-3 justify-end">
                 <Button
                   onClick={handleDeleteImages}
@@ -214,8 +203,6 @@ export default function VehicleUpdateImage() {
                   Lưu thay đổi
                 </Button>
               </div>
-
-              {/* 🟢 Thông báo */}
               {message && (
                 <div className="text-center text-sm text-gray-700">
                   {message}
