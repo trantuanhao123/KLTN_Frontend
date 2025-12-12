@@ -6,7 +6,6 @@ import {
 } from "../../hooks/useOrder";
 
 import Layout from "../../components/layouts/Layout";
-// [THAY ĐỔI] Import các biến thể Button
 import Button, {
   ButtonCreate,
   ButtonRead,
@@ -17,7 +16,6 @@ import Card from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
 import Table from "../../components/ui/Table";
 
-// ... (Toàn bộ code MAPS và hàm getBadge... giữ nguyên)
 const STATUS_MAP = {
   PENDING_PAYMENT: "Chờ thanh toán",
   CONFIRMED: "Đã xác nhận",
@@ -74,7 +72,6 @@ const getPaymentBadgeClass = (status) => {
       return "bg-gray-100 text-gray-800 border border-gray-300";
   }
 };
-// ... (Hết phần không đổi)
 
 export default function BookingList() {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -135,82 +132,84 @@ export default function BookingList() {
     "Hành động",
   ];
 
-  // 🟢 Bản renderRow đã đồng bộ button
-  const renderRow = (order) => (
-    <>
-      <td className="px-4 py-2 font-medium">{order.ORDER_CODE}</td>
-      <td className="px-4 py-2">
-        <span
-          className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(
-            order.STATUS
-          )}`}
-        >
-          {STATUS_MAP[order.STATUS] || order.STATUS}
-        </span>
-      </td>
-      <td className="px-4 py-2">
-        <span
-          className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getPaymentBadgeClass(
-            order.PAYMENT_STATUS
-          )}`}
-        >
-          {PAYMENT_STATUS_MAP[order.PAYMENT_STATUS] || order.PAYMENT_STATUS}
-        </span>
-      </td>
-      <td className="px-4 py-2">
-        {Number(order.FINAL_AMOUNT).toLocaleString("vi-VN")} VNĐ
-      </td>
-      <td className="px-4 py-2">
-        {new Date(order.CREATED_AT).toLocaleDateString("vi-VN")}
-      </td>
-      <td className="px-4 py-2">
-        <div className="flex flex-wrap gap-2">
-          {/* [THAY ĐỔI] Dùng ButtonRead + className cho button nhỏ */}
-          <Link to={`/bookings/${order.ORDER_ID}`}>
-            <ButtonRead className="text-xs px-3 py-1">Chi Tiết</ButtonRead>
-          </Link>
+  const renderRow = (order) => {
+    // Logic kiểm tra điều kiện ẩn nút xóa
+    const shouldHideDelete =
+      order.STATUS === "COMPLETED" && order.PAYMENT_STATUS === "PAID";
 
-          {/* [THAY ĐỔI] Dùng ButtonEdit + className cho button nhỏ */}
-          <Link to={`/bookings/edit/${order.ORDER_ID}`}>
-            <ButtonEdit className="text-xs px-3 py-1">Gia Hạn</ButtonEdit>
-          </Link>
-
-          {/* [THAY ĐỔI] Dùng ButtonCreate (màu xanh lá) + className */}
-          {order.STATUS === "CONFIRMED" && (
-            <Link to={`/bookings/pickup/${order.ORDER_ID}`}>
-              <ButtonCreate className="text-xs px-3 py-1">
-                Bàn Giao
-              </ButtonCreate>
-            </Link>
-          )}
-
-          {/* [GIỮ NGUYÊN] Dùng Button (default) và override màu indigo */}
-          {order.STATUS === "IN_PROGRESS" && (
-            <Link to={`/bookings/complete/${order.ORDER_ID}`}>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-xs px-3 py-1">
-                Trả Xe
-              </Button>
-            </Link>
-          )}
-
-          {/* [THAY ĐỔI] Dùng ButtonDelete + className cho button nhỏ */}
-          <ButtonDelete
-            className="text-xs px-3 py-1"
-            onClick={() => handleDelete(order.ORDER_ID)}
+    return (
+      <>
+        <td className="px-4 py-2 font-medium">{order.ORDER_CODE}</td>
+        <td className="px-4 py-2">
+          <span
+            className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(
+              order.STATUS
+            )}`}
           >
-            Xóa
-          </ButtonDelete>
-        </div>
-      </td>
-    </>
-  );
+            {STATUS_MAP[order.STATUS] || order.STATUS}
+          </span>
+        </td>
+        <td className="px-4 py-2">
+          <span
+            className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getPaymentBadgeClass(
+              order.PAYMENT_STATUS
+            )}`}
+          >
+            {PAYMENT_STATUS_MAP[order.PAYMENT_STATUS] || order.PAYMENT_STATUS}
+          </span>
+        </td>
+        <td className="px-4 py-2">
+          {Number(order.FINAL_AMOUNT).toLocaleString("vi-VN")} VNĐ
+        </td>
+        <td className="px-4 py-2">
+          {new Date(order.CREATED_AT).toLocaleDateString("vi-VN")}
+        </td>
+        <td className="px-4 py-2">
+          <div className="flex flex-wrap gap-2">
+            <Link to={`/bookings/${order.ORDER_ID}`}>
+              <ButtonRead className="text-xs px-3 py-1">Chi Tiết</ButtonRead>
+            </Link>
+
+            <Link to={`/bookings/edit/${order.ORDER_ID}`}>
+              <ButtonEdit className="text-xs px-3 py-1">Gia Hạn</ButtonEdit>
+            </Link>
+
+            {order.STATUS === "CONFIRMED" && (
+              <Link to={`/bookings/pickup/${order.ORDER_ID}`}>
+                <ButtonCreate className="text-xs px-3 py-1">
+                  Bàn Giao
+                </ButtonCreate>
+              </Link>
+            )}
+
+            {order.STATUS === "IN_PROGRESS" && (
+              <Link to={`/bookings/complete/${order.ORDER_ID}`}>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-xs px-3 py-1">
+                  Trả Xe
+                </Button>
+              </Link>
+            )}
+
+            {/* Chỉ hiện nút Xóa nếu KHÔNG thỏa mãn cả 2 điều kiện (Completed + Paid) */}
+            {!shouldHideDelete && (
+              <ButtonDelete
+                className="text-xs px-3 py-1"
+                onClick={() => handleDelete(order.ORDER_ID)}
+              >
+                Xóa
+              </ButtonDelete>
+            )}
+          </div>
+        </td>
+      </>
+    );
+  };
 
   return (
     <Layout>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý Đơn hàng</h1>
         <Link to="/bookings/new">
-          {/* [THAY ĐỔI] Dùng ButtonCreate */}
           <ButtonCreate>Thêm đơn</ButtonCreate>
         </Link>
       </div>
@@ -222,7 +221,6 @@ export default function BookingList() {
       )}
 
       <Card>
-        {/* ... (Phần Filter giữ nguyên) ... */}
         <div className="flex space-x-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -286,7 +284,6 @@ export default function BookingList() {
           </p>
         )}
         <div className="flex justify-end space-x-3">
-          {/* [GIỮ NGUYÊN] Dùng Button (default) và override màu xám */}
           <Button
             className="bg-gray-200 hover:bg-gray-300 text-gray-800"
             onClick={() => setDeleteModalOpen(false)}
@@ -294,7 +291,6 @@ export default function BookingList() {
             Hủy
           </Button>
 
-          {/* [THAY ĐỔI] Dùng ButtonDelete (kích thước mặc định) */}
           <ButtonDelete onClick={onConfirmDelete} disabled={deleteLoading}>
             {deleteLoading ? "Đang xóa..." : "Xác nhận Xóa"}
           </ButtonDelete>

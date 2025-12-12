@@ -10,7 +10,7 @@ import Button from "../../components/ui/Button";
 
 const PAYMENT_METHOD_OPTIONS = [
   { label: "Tiền mặt", value: "CASH" },
-  { label: "VNPAY", value: "VNPAY" },
+  { label: "PayOS", value: "PayOS" },
 ];
 
 const PAYMENT_STATUS_OPTIONS = [
