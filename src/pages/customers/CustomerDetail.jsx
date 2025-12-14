@@ -203,7 +203,7 @@ export default function CustomerDetail() {
           </p>
           {PROVIDER !== "local" && (
             <p>
-              <strong>Provider ID:</strong> {PROVIDER_ID || "—"}
+              <strong>Mã nhà cung cấp:</strong> {PROVIDER_ID || "—"}
             </p>
           )}
           <p>

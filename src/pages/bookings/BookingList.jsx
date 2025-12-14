@@ -133,13 +133,16 @@ export default function BookingList() {
   ];
 
   const renderRow = (order) => {
-    // Logic kiểm tra điều kiện ẩn nút xóa
+    const canExtend =
+      order.STATUS === "CONFIRMED" || order.STATUS === "IN_PROGRESS";
+
     const shouldHideDelete =
       order.STATUS === "COMPLETED" && order.PAYMENT_STATUS === "PAID";
 
     return (
       <>
         <td className="px-4 py-2 font-medium">{order.ORDER_CODE}</td>
+
         <td className="px-4 py-2">
           <span
             className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(
@@ -149,6 +152,7 @@ export default function BookingList() {
             {STATUS_MAP[order.STATUS] || order.STATUS}
           </span>
         </td>
+
         <td className="px-4 py-2">
           <span
             className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getPaymentBadgeClass(
@@ -158,21 +162,26 @@ export default function BookingList() {
             {PAYMENT_STATUS_MAP[order.PAYMENT_STATUS] || order.PAYMENT_STATUS}
           </span>
         </td>
+
         <td className="px-4 py-2">
           {Number(order.FINAL_AMOUNT).toLocaleString("vi-VN")} VNĐ
         </td>
+
         <td className="px-4 py-2">
           {new Date(order.CREATED_AT).toLocaleDateString("vi-VN")}
         </td>
+
         <td className="px-4 py-2">
           <div className="flex flex-wrap gap-2">
             <Link to={`/bookings/${order.ORDER_ID}`}>
               <ButtonRead className="text-xs px-3 py-1">Chi Tiết</ButtonRead>
             </Link>
 
-            <Link to={`/bookings/edit/${order.ORDER_ID}`}>
-              <ButtonEdit className="text-xs px-3 py-1">Gia Hạn</ButtonEdit>
-            </Link>
+            {canExtend && (
+              <Link to={`/bookings/edit/${order.ORDER_ID}`}>
+                <ButtonEdit className="text-xs px-3 py-1">Gia Hạn</ButtonEdit>
+              </Link>
+            )}
 
             {order.STATUS === "CONFIRMED" && (
               <Link to={`/bookings/pickup/${order.ORDER_ID}`}>
@@ -190,7 +199,6 @@ export default function BookingList() {
               </Link>
             )}
 
-            {/* Chỉ hiện nút Xóa nếu KHÔNG thỏa mãn cả 2 điều kiện (Completed + Paid) */}
             {!shouldHideDelete && (
               <ButtonDelete
                 className="text-xs px-3 py-1"
@@ -227,7 +235,7 @@ export default function BookingList() {
               Lọc theo trạng thái:
             </label>
             <select
-              className="block w-full min-w-[200px] p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+              className="block w-full min-w-[200px] p-2 border border-gray-300 rounded-md"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
@@ -244,7 +252,7 @@ export default function BookingList() {
               Lọc theo thanh toán:
             </label>
             <select
-              className="block w-full min-w-[200px] p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+              className="block w-full min-w-[200px] p-2 border border-gray-300 rounded-md"
               value={selectedPaymentStatus}
               onChange={(e) => setSelectedPaymentStatus(e.target.value)}
             >
@@ -275,14 +283,15 @@ export default function BookingList() {
         className="max-w-md"
       >
         <p className="mb-4">
-          Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng này không? Hành động này
-          không thể hoàn tác.
+          Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng này không?
         </p>
+
         {deleteError && (
           <p className="text-red-600 text-sm mb-2">
             Lỗi: {deleteError.response?.data?.error || deleteError.message}
           </p>
         )}
+
         <div className="flex justify-end space-x-3">
           <Button
             className="bg-gray-200 hover:bg-gray-300 text-gray-800"
